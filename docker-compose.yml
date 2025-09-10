@@ -1,0 +1,6 @@
+services:
+  documentmanagementsystem.rest:
+    image: ${DOCKER_REGISTRY-}documentmanagementsystemrest
+    build:
+      context: .
+      dockerfile: DocumentManagementSystem.REST/Dockerfile
