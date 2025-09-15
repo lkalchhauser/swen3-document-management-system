@@ -1,11 +1,20 @@
 
+using DocumentManagementService.DAL;
+using Microsoft.EntityFrameworkCore;
+
 namespace DocumentManagementSystem.REST
 {
 	public class Program
 	{
+		public const bool RECREATE_DATABASE = true;
+
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
+
+			var conn = builder.Configuration.GetConnectionString("Default");
+
+			builder.Services.AddDbContext<DocumentManagementServiceContext>(opts => opts.UseNpgsql(conn));
 
 			// Add services to the container.
 
@@ -15,6 +24,28 @@ namespace DocumentManagementSystem.REST
 			builder.Services.AddSwaggerGen();
 
 			var app = builder.Build();
+
+			using (var scope = app.Services.CreateScope())
+			{
+				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementServiceContext>();
+
+				if (RECREATE_DATABASE)
+				{
+					dbContext.Database.ExecuteSqlRaw(@"
+            DO $$ 
+            DECLARE 
+                r RECORD;
+            BEGIN 
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP 
+                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE'; 
+                END LOOP; 
+            END $$;
+        ");
+					dbContext.Database.EnsureCreated();
+
+
+				}
+			}
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
