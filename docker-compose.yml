@@ -22,7 +22,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./DocumentManagementSystem.REST/Dockerfile   # <--- adjust if different
+      dockerfile: ./DocumentManagementSystem.REST/Dockerfile
     container_name: dms_api
     restart: unless-stopped
     depends_on:
@@ -32,7 +32,6 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
 
-      # recommended: pass a full connection string via standard .NET key
       ConnectionStrings__Default: >
         Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};
         Username=${POSTGRES_USER:-dms};
