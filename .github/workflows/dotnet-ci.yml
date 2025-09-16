@@ -26,4 +26,4 @@ jobs:
         run: dotnet build DocumentManagementSystem.sln --no-restore --configuration Release
 
       - name: Run tests (DAL)
-        run: dotnet test DocumentManagementService.DAL.Tests/DocumentManagementService.DAL.Tests.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test DocumentManagementSystem.DAL.Tests/DocumentManagementSystem.DAL.Tests.csproj --no-build --configuration Release --verbosity normal
