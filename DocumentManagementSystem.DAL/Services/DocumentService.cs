@@ -34,7 +34,7 @@ namespace DocumentManagementSystem.DAL.Services
 			var doc = _mapper.Map<Document>(dto);
 
 			doc.CreatedAt = DateTimeOffset.UtcNow;
-			// Server-side metadata
+			// TODO: Server-side metadata verification
 			doc.Metadata = new DocumentMetadata
 			{
 				CreatedAt = DateTimeOffset.UtcNow,
@@ -59,11 +59,10 @@ namespace DocumentManagementSystem.DAL.Services
 			existing.Metadata.ContentType = dto.ContentType ?? existing.Metadata.ContentType;
 
 			existing.Tags.Clear();
-			if (dto.Tags != null)
-				foreach (var tagName in dto.Tags)
-				{
-					existing.Tags.Add(new Tag { Name = tagName });
-				}
+			foreach (var tagName in dto.Tags)
+			{
+				existing.Tags.Add(new Tag { Name = tagName });
+			}
 
 			await _repository.UpdateAsync(existing, ct);
 			await _repository.SaveChangesAsync(ct);

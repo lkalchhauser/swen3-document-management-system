@@ -6,7 +6,7 @@ namespace DocumentManagementSystem.Model.DTO
 	{
 		public Guid Id { get; set; }
 
-		public DocumentMetadataDTO Metadata { get; set; } = default!;
+		public DocumentMetadataDTO Metadata { get; set; } = null!;
 		// we don't need to type this since tags are only a string
 		public List<string> Tags { get; set; } = [];
 

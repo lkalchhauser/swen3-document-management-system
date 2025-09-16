@@ -4,7 +4,7 @@ namespace DocumentManagementSystem.Model.ORM
 {
 	public class Document : BaseFileEntity
 	{
-		public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+		public ICollection<Tag> Tags { get; set; } = [];
 
 		public DocumentMetadata? Metadata { get; set; }
 	}
