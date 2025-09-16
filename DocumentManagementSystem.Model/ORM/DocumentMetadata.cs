@@ -5,11 +5,16 @@ namespace DocumentManagementSystem.Model.ORM
 	public class DocumentMetadata : BaseEntity
 	{
 		public Guid DocumentId { get; set; }
-		// we use Key/Value separately instead of a collection since EFCore doesn't directly support collections
-		public string Key { get; set; }
-		public string Value { get; set; }
+		public Document? Document { get; set; }
 
-		// only for help with navigation
-		public Document Document { get; set; }
+		public DateTime CreatedAt { get; set; }
+		public DateTime? UpdatedAt { get; set; }
+
+		public long FileSize { get; set; }
+		public string ContentType { get; set; } = string.Empty;
+		public string? StoragePath { get; set; }
+
+		public string? OcrText { get; set; }
+		public string? Summary { get; set; }
 	}
 }

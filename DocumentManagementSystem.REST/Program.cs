@@ -1,10 +1,12 @@
 
 using DocumentManagementService.DAL;
+using DocumentManagementService.DAL.Mapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DocumentManagementSystem.REST
 {
-	public class Program
+	public partial class Program
 	{
 		public const bool RECREATE_DATABASE = true;
 
@@ -17,6 +19,11 @@ namespace DocumentManagementSystem.REST
 			builder.Services.AddDbContext<DocumentManagementServiceContext>(opts => opts.UseNpgsql(conn));
 
 			// Add services to the container.
+			builder.Services.AddAutoMapper(
+				cfg => {
+
+				}, typeof(MappingProfile)
+			);
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -42,8 +49,6 @@ namespace DocumentManagementSystem.REST
             END $$;
         ");
 					dbContext.Database.EnsureCreated();
-
-
 				}
 			}
 

@@ -2,15 +2,13 @@
 
 namespace DocumentManagementSystem.Model.DTO
 {
-	public class DocumentDTO : BaseFileDto
+	public class DocumentDTO : BaseFileDTO
 	{
 		public Guid Id { get; set; }
-		public DateTime UploadedAt { get; set; }
-		public string? OcrText { get; set; }
-		public string? Summary { get; set; }
 
+		public DocumentMetadataDTO Metadata { get; set; } = default!;
+		// we don't need to type this since tags are only a string
 		public List<string> Tags { get; set; } = [];
-		public Dictionary<string, string> Metadata { get; set; } = [];
 
 	}
 }
