@@ -7,7 +7,6 @@ namespace DocumentManagementSystem.Model.ORM
 		public Guid DocumentId { get; set; }
 		public Document? Document { get; set; }
 
-		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? UpdatedAt { get; set; }
 
 		public long FileSize { get; set; }

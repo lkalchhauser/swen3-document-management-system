@@ -25,5 +25,20 @@ jobs:
       - name: Build solution
         run: dotnet build DocumentManagementSystem.sln --no-restore --configuration Release
 
-      - name: Run tests (DAL)
-        run: dotnet test DocumentManagementSystem.DAL.Tests/DocumentManagementSystem.DAL.Tests.csproj --no-build --configuration Release --verbosity normal
+      - name: Run tests (DAL) and collect results
+        run: dotnet test DocumentManagementSystem.DAL.Tests/DocumentManagementSystem.DAL.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always() # upload even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+      - name: Report test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: .NET Tests
+          path: TestResults/test_results.trx
+          reporter: dotnet-trx

@@ -59,10 +59,11 @@ namespace DocumentManagementSystem.DAL.Services
 			existing.Metadata.ContentType = dto.ContentType ?? existing.Metadata.ContentType;
 
 			existing.Tags.Clear();
-			foreach (var tagName in dto.Tags)
-			{
-				existing.Tags.Add(new Tag { Name = tagName });
-			}
+			if (dto.Tags != null)
+				foreach (var tagName in dto.Tags)
+				{
+					existing.Tags.Add(new Tag { Name = tagName });
+				}
 
 			await _repository.UpdateAsync(existing, ct);
 			await _repository.SaveChangesAsync(ct);
