@@ -17,7 +17,7 @@ namespace DocumentManagementSystem.Application.Mapper
 
 			// DTO → ORM
 			CreateMap<DocumentCreateDTO, Document>()
-				 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(name => new Tag { Name = name, CreatedAt = DateTimeOffset.UtcNow})));
+				 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(name => new Tag { Name = name, CreatedAt = DateTimeOffset.UtcNow })));
 
 			CreateMap<DocumentMetadataDTO, DocumentMetadata>();
 			CreateMap<TagDTO, Tag>();
