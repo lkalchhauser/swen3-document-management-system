@@ -1,6 +1,6 @@
 ﻿using DocumentManagementSystem.Model.DTO;
 
-namespace DocumentManagementService.DAL.Services.Interfaces
+namespace DocumentManagementSystem.DAL.Services.Interfaces
 {
 	public interface IDocumentService
 	{

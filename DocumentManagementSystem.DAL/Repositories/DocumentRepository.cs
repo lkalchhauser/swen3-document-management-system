@@ -1,14 +1,14 @@
-﻿using DocumentManagementService.DAL.Repositories.Interfaces;
+﻿using DocumentManagementSystem.DAL.Repositories.Interfaces;
 using DocumentManagementSystem.Model.ORM;
 using Microsoft.EntityFrameworkCore;
 
-namespace DocumentManagementService.DAL.Repositories
+namespace DocumentManagementSystem.DAL.Repositories
 {
 	public class DocumentRepository : IDocumentRepository
 	{
-		private readonly DocumentManagementServiceContext _context;
+		private readonly DocumentManagementSystemContext _context;
 
-		public DocumentRepository(DocumentManagementServiceContext context)
+		public DocumentRepository(DocumentManagementSystemContext context)
 		{
 			_context = context;
 		}

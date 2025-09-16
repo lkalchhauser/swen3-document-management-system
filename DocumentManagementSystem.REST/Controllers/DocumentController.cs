@@ -1,4 +1,4 @@
-﻿using DocumentManagementService.DAL.Services.Interfaces;
+﻿using DocumentManagementSystem.DAL.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.AspNetCore.Mvc;
 

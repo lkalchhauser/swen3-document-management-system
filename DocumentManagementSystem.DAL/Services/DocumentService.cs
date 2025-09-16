@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using DocumentManagementService.DAL.Repositories.Interfaces;
-using DocumentManagementService.DAL.Services.Interfaces;
+using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.DAL.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using DocumentManagementSystem.Model.ORM;
 
-namespace DocumentManagementService.DAL.Services
+namespace DocumentManagementSystem.DAL.Services
 {
 	public class DocumentService : IDocumentService
 	{

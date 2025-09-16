@@ -1,10 +1,9 @@
-
-using DocumentManagementService.DAL;
-using DocumentManagementService.DAL.Repositories;
-using DocumentManagementService.DAL.Repositories.Interfaces;
-using DocumentManagementService.DAL.Services;
-using DocumentManagementService.DAL.Services.Interfaces;
-using DocumentManagementService.DAL.Mapper;
+using DocumentManagementSystem.DAL;
+using DocumentManagementSystem.DAL.Mapper;
+using DocumentManagementSystem.DAL.Repositories;
+using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.DAL.Services;
+using DocumentManagementSystem.DAL.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocumentManagementSystem.REST
@@ -19,7 +18,7 @@ namespace DocumentManagementSystem.REST
 
 			var conn = builder.Configuration.GetConnectionString("Default");
 
-			builder.Services.AddDbContext<DocumentManagementServiceContext>(opts => opts.UseNpgsql(conn));
+			builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
 
@@ -40,7 +39,7 @@ namespace DocumentManagementSystem.REST
 
 			using (var scope = app.Services.CreateScope())
 			{
-				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementServiceContext>();
+				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementSystemContext>();
 
 				if (RECREATE_DATABASE)
 				{

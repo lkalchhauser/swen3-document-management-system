@@ -1,6 +1,6 @@
 ﻿using DocumentManagementSystem.Model.ORM;
 
-namespace DocumentManagementService.DAL.Repositories.Interfaces
+namespace DocumentManagementSystem.DAL.Repositories.Interfaces
 {
 	public interface IDocumentRepository
 	{
