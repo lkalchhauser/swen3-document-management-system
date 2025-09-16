@@ -2,6 +2,6 @@
 {
 	public abstract class BaseFileEntity : BaseEntity
 	{
-		public string FileName { get; set; } = default!;
+		public string FileName { get; set; } = null!;
 	}
 }
