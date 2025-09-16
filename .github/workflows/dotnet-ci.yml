@@ -26,7 +26,10 @@ jobs:
         run: dotnet build DocumentManagementSystem.sln --no-restore --configuration Release
 
       - name: Run tests (DAL) and collect results
-        run: dotnet test DocumentManagementSystem.DAL.Tests/DocumentManagementSystem.DAL.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+        run: dotnet test DocumentManagementSystem.DAL.Tests/DocumentManagementSystem.DAL.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=dal_test_results.trx" --results-directory TestResults
+
+      - name: Run tests (Application) and collect results
+        run: dotnet test DocumentManagementSystem.Application.Tests/DocumentManagementSystem.Application.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=application_test_results.trx" --results-directory TestResults
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v2
