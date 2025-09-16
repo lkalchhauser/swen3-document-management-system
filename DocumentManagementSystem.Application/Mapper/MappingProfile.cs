@@ -2,7 +2,7 @@
 using DocumentManagementSystem.Model.DTO;
 using DocumentManagementSystem.Model.ORM;
 
-namespace DocumentManagementSystem.DAL.Mapper
+namespace DocumentManagementSystem.Application.Mapper
 {
 	public class MappingProfile : Profile
 	{

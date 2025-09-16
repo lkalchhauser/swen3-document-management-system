@@ -1,9 +1,9 @@
+using DocumentManagementSystem.Application.Mapper;
+using DocumentManagementSystem.Application.Services;
+using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
-using DocumentManagementSystem.DAL.Mapper;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
-using DocumentManagementSystem.DAL.Services;
-using DocumentManagementSystem.DAL.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocumentManagementSystem.REST

@@ -1,8 +1,8 @@
 ﻿using AutoFixture;
 using AutoMapper;
-using DocumentManagementSystem.DAL.Mapper;
+using DocumentManagementSystem.Application.Mapper;
+using DocumentManagementSystem.Application.Services;
 using DocumentManagementSystem.DAL.Repositories;
-using DocumentManagementSystem.DAL.Services;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
