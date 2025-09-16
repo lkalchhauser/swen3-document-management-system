@@ -1,1 +1,2 @@
 # Document Management System for SWEN3
+[![.NET CI](https://github.com/lkalchhauser/swen3-document-management-system/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/lkalchhauser/swen3-document-management-system/actions/workflows/dotnet-ci.yml)
