@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentManagementSystem.DA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentManagementSystem.Application", "DocumentManagementSystem.Application\DocumentManagementSystem.Application.csproj", "{4ACCCDFD-4CD1-492A-B851-ABD26A59C13E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentManagementSystem.Application.Tests", "..\DocumentManagementSystem.Application.Tests\DocumentManagementSystem.Application.Tests.csproj", "{32020BB0-082D-44A2-9A45-7E8FF158B0FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentManagementSystem.Application.Tests", "DocumentManagementSystem.Application.Tests\DocumentManagementSystem.Application.Tests.csproj", "{32020BB0-082D-44A2-9A45-7E8FF158B0FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
