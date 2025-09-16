@@ -1,8 +1,11 @@
 
 using DocumentManagementService.DAL;
+using DocumentManagementService.DAL.Repositories;
+using DocumentManagementService.DAL.Repositories.Interfaces;
+using DocumentManagementService.DAL.Services;
+using DocumentManagementService.DAL.Services.Interfaces;
 using DocumentManagementService.DAL.Mapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DocumentManagementSystem.REST
 {
@@ -17,10 +20,13 @@ namespace DocumentManagementSystem.REST
 			var conn = builder.Configuration.GetConnectionString("Default");
 
 			builder.Services.AddDbContext<DocumentManagementServiceContext>(opts => opts.UseNpgsql(conn));
+			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+			builder.Services.AddScoped<IDocumentService, DocumentService>();
 
 			// Add services to the container.
 			builder.Services.AddAutoMapper(
-				cfg => {
+				cfg =>
+				{
 
 				}, typeof(MappingProfile)
 			);
