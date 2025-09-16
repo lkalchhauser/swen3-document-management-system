@@ -32,7 +32,7 @@ jobs:
         uses: dorny/test-reporter@v2
         if: always() # Always run this step, even if tests fail
         with:
-          name: NUnit Test Results
+          name: Test Results
           path: "**/*test_results.trx"
           reporter: dotnet-trx
           fail-on-error: true
