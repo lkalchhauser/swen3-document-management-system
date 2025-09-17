@@ -5,7 +5,7 @@
 While the `docker-compose.yml` does contain defaults, you should create a `.env` environment file in the root directory.
 
 ### Example Environment File
-```sh
+```dotenv
 ASPNETCORE_ENVIRONMENT=Development
 
 POSTGRES_USER=dmstest
