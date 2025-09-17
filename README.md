@@ -5,7 +5,7 @@
 While the `docker-compose.yml` does contain defaults, you should create a `.env` environment file in the root directory.
 
 ### Example Environment File
-```
+```sh
 ASPNETCORE_ENVIRONMENT=Development
 
 POSTGRES_USER=dmstest
@@ -17,4 +17,5 @@ API_PORT=8081
 
 PGADMIN_PORT=9091
 PGADMIN_DEFAULT_EMAIL=max@mustermann.at
-PGADMIN_DEFAULT_PASSWORD=admin```
+PGADMIN_DEFAULT_PASSWORD=admin
+```
