@@ -30,6 +30,18 @@ namespace DocumentManagementSystem.REST
 				}, typeof(MappingProfile)
 			);
 
+			// Configure CORS for frontend communication
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowUI", policy =>
+				{
+					policy.WithOrigins("http://localhost", "http://localhost:80", "http://ui")
+						  .AllowAnyMethod()
+						  .AllowAnyHeader()
+						  .AllowCredentials();
+				});
+			});
+
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
@@ -64,6 +76,7 @@ namespace DocumentManagementSystem.REST
 				app.UseSwaggerUI();
 			}
 
+			app.UseCors("AllowUI");
 			app.UseAuthorization();
 
 
