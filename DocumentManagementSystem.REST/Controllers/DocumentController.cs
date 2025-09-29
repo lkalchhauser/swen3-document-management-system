@@ -72,6 +72,40 @@ namespace DocumentManagementSystem.REST.Controllers
 			return Ok(updated);
 		}
 
+		// POST api/document/upload
+		[HttpPost("upload")]
+		public async Task<ActionResult<DocumentDTO>> UploadFile(IFormFile file, [FromForm] string? tags, CancellationToken ct)
+		{
+			if (file == null || file.Length == 0)
+			{
+				return BadRequest("No file provided");
+			}
+
+			// Parse tags if provided
+			var tagList = new List<string>();
+			if (!string.IsNullOrWhiteSpace(tags))
+			{
+				tagList = tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
+					.Select(t => t.Trim())
+					.Where(t => !string.IsNullOrEmpty(t))
+					.ToList();
+			}
+
+			// Create DTO from uploaded file
+			var dto = new DocumentCreateDTO
+			{
+				FileName = file.FileName,
+				FileSize = file.Length,
+				ContentType = file.ContentType,
+				Tags = tagList
+			};
+
+			// For now, we'll create the document record
+			// In a real implementation, you'd also save the file to storage
+			var created = await _service.CreateAsync(dto, ct);
+			return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+		}
+
 		// DELETE api/document/{id}
 		[HttpDelete("{id:guid}")]
 		public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
