@@ -49,7 +49,7 @@ namespace DocumentManagementSystem.Application.Services
 			await _repository.AddAsync(doc, ct);
 			await _repository.SaveChangesAsync(ct);
 
-			var message = new DocumentUploadMessage(
+			var message = new DocumentUploadMessageDTO(
 				DocumentId: doc.Id,
 				FileName: doc.FileName,
 				StoragePath: null,

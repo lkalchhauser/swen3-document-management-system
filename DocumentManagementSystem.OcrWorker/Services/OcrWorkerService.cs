@@ -6,12 +6,12 @@ using Microsoft.Extensions.Options;
 
 namespace DocumentManagementSystem.OcrWorker.Services;
 
-public sealed class OcrWorkerService : MessageConsumerService<DocumentUploadMessage>
+public sealed class OcrWorkerService : MessageConsumerService<DocumentUploadMessageDTO>
 {
 	public OcrWorkerService(IOptions<RabbitMQOptions> options, ILogger<OcrWorkerService> logger)
 		: base(options, logger) { }
 
-	protected override Task HandleMessageAsync(DocumentUploadMessage msg, CancellationToken ct)
+	protected override Task HandleMessageAsync(DocumentUploadMessageDTO msg, CancellationToken ct)
 	{
 		// For Sprint 3: just log the received message
 		Console.WriteLine($"[OCR Worker] Received document {msg.DocumentId} - {msg.FileName}");
