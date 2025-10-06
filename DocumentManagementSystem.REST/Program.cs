@@ -4,7 +4,9 @@ using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.Model.Other;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DocumentManagementSystem.REST
 {
@@ -18,9 +20,22 @@ namespace DocumentManagementSystem.REST
 
 			var conn = builder.Configuration.GetConnectionString("Default");
 
+			builder.Services.AddOptions<RabbitMQOptions>()
+				.Bind(builder.Configuration.GetSection("RabbitMq"))
+				.ValidateDataAnnotations()
+				.Validate(o => !string.IsNullOrWhiteSpace(o.QueueName), "QueueName required");
+
+			builder.Services.AddSingleton<IMessagePublisherService>(sp =>
+			{
+				var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>();
+				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
+				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
+			});
+
 			builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
+			builder.Services.AddScoped<IMessagePublisherService, MessagePublisherService>();
 
 			// Add services to the container.
 			builder.Services.AddAutoMapper(

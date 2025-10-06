@@ -10,11 +10,13 @@ namespace DocumentManagementSystem.Application.Services
 	{
 		private readonly IDocumentRepository _repository;
 		private readonly IMapper _mapper;
+		private readonly IMessagePublisherService _messagePublisherService;
 
-		public DocumentService(IDocumentRepository repository, IMapper mapper)
+		public DocumentService(IDocumentRepository repository, IMapper mapper, IMessagePublisherService messagePublisherService)
 		{
 			_repository = repository;
 			_mapper = mapper;
+			_messagePublisherService = messagePublisherService;
 		}
 
 		public async Task<DocumentDTO?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -41,9 +43,19 @@ namespace DocumentManagementSystem.Application.Services
 				ContentType = dto.ContentType ?? "application/octet-stream",
 				FileSize = 0 // Will be updated later when file is stored
 			};
+			
 
 			await _repository.AddAsync(doc, ct);
 			await _repository.SaveChangesAsync(ct);
+
+			var message = new DocumentUploadMessage(
+				DocumentId: doc.Id,
+				FileName: doc.FileName,
+				StoragePath: null,
+				UploadedAtUtc: doc.CreatedAt
+			);
+
+			await _messagePublisherService.PublishAsync(message, ct);
 
 			return _mapper.Map<DocumentDTO>(doc);
 		}

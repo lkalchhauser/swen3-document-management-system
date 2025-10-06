@@ -1,6 +1,13 @@
 name: dms
 
 services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: dms_rabbitmq
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"     # AMQP
+      - "${RABBITMQ_UI_PORT:-9093}:15672"   # Mgmt UI
   postgres:
     image: postgres:latest
     container_name: dms_postgres
@@ -26,8 +33,8 @@ services:
     container_name: dms_api
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
+      - rabbitmq
+      - postgres
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
