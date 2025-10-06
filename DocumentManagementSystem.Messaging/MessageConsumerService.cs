@@ -6,10 +6,11 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using DocumentManagementSystem.Messaging.Interfaces;
 
 namespace DocumentManagementSystem.Messaging;
 
-public abstract class MessageConsumerService<TMessage> : BackgroundService
+public abstract class MessageConsumerService<TMessage> : BackgroundService, IMessageConsumerService
 {
 	private readonly ILogger _logger;
 	private readonly RabbitMQOptions _options;
@@ -22,9 +23,9 @@ public abstract class MessageConsumerService<TMessage> : BackgroundService
 		_logger = logger;
 	}
 
-	protected abstract Task HandleMessageAsync(TMessage message, CancellationToken ct);
+	protected abstract Task HandleMessageAsync(TMessage message, CancellationToken ct = default);
 
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	protected override async Task ExecuteAsync(CancellationToken ct = default)
 	{
 		var factory = new ConnectionFactory
 		{
@@ -34,8 +35,8 @@ public abstract class MessageConsumerService<TMessage> : BackgroundService
 			Password = _options.Password
 		};
 
-		_connection = await factory.CreateConnectionAsync(stoppingToken);
-		_channel = await _connection.CreateChannelAsync(null, stoppingToken);
+		_connection = await factory.CreateConnectionAsync(ct);
+		_channel = await _connection.CreateChannelAsync(null, ct);
 
 		await _channel.QueueDeclareAsync(
 			 _options.QueueName,
@@ -43,7 +44,7 @@ public abstract class MessageConsumerService<TMessage> : BackgroundService
 			 exclusive: false,
 			 autoDelete: false,
 			 arguments: null,
-			 cancellationToken: stoppingToken);
+			 cancellationToken: ct);
 
 		var consumer = new AsyncEventingBasicConsumer(_channel);
 		consumer.ReceivedAsync += async (_, ea) =>
@@ -54,23 +55,23 @@ public abstract class MessageConsumerService<TMessage> : BackgroundService
 				var msg = JsonSerializer.Deserialize<TMessage>(body);
 				if (msg is not null)
 				{
-					await HandleMessageAsync(msg, stoppingToken);
+					await HandleMessageAsync(msg, ct);
 				}
 
-				await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
+				await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: ct);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error processing message");
-				await _channel!.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false, cancellationToken: stoppingToken);
+				await _channel!.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false, cancellationToken: ct);
 			}
 		};
 
-		await _channel.BasicConsumeAsync(_options.QueueName, autoAck: false, consumer, cancellationToken: stoppingToken);
+		await _channel.BasicConsumeAsync(_options.QueueName, autoAck: false, consumer, cancellationToken: ct);
 		_logger.LogInformation("Consuming from queue {Queue}", _options.QueueName);
 	}
 
-	public override async Task StopAsync(CancellationToken ct)
+	public override async Task StopAsync(CancellationToken ct = default)
 	{
 		if (_channel is not null) await _channel.DisposeAsync();
 		if (_connection is not null) await _connection.DisposeAsync();
