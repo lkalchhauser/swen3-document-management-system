@@ -1,4 +1,4 @@
-﻿namespace DocumentManagementSystem.Application.Services.Interfaces;
+﻿namespace DocumentManagementSystem.Messaging.Interfaces;
 
 public interface IMessagePublisherService
 {

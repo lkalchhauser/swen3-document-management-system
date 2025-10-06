@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using DocumentManagementSystem.Model.ORM;
 

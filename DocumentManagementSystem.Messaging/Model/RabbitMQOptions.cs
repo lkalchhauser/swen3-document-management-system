@@ -1,4 +1,4 @@
-﻿namespace DocumentManagementSystem.Model.Other;
+﻿namespace DocumentManagementSystem.Messaging.Model;
 
 public class RabbitMQOptions
 {

@@ -4,7 +4,9 @@ using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
-using DocumentManagementSystem.Model.Other;
+using DocumentManagementSystem.Messaging;
+using DocumentManagementSystem.Messaging.Interfaces;
+using DocumentManagementSystem.Messaging.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -35,7 +37,6 @@ namespace DocumentManagementSystem.REST
 			builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
-			builder.Services.AddScoped<IMessagePublisherService, MessagePublisherService>();
 
 			// Add services to the container.
 			builder.Services.AddAutoMapper(

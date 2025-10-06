@@ -1,13 +1,12 @@
 ﻿using System.Text;
 using System.Text.Json;
-using DocumentManagementSystem.Application.Services.Interfaces;
-using DocumentManagementSystem.Model.Other;
-using Microsoft.EntityFrameworkCore.Metadata;
+using DocumentManagementSystem.Messaging.Interfaces;
+using DocumentManagementSystem.Messaging.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace DocumentManagementSystem.Application.Services;
+namespace DocumentManagementSystem.Messaging;
 
 public class MessagePublisherService : IMessagePublisherService, IAsyncDisposable
 {
@@ -81,7 +80,7 @@ public class MessagePublisherService : IMessagePublisherService, IAsyncDisposabl
 			await _channel.CloseAsync();
 			await _channel.DisposeAsync();
 			await _connection.CloseAsync();
-			await _channel.DisposeAsync();
+			await _connection.DisposeAsync();
 		}
 		catch (Exception ex)
 		{

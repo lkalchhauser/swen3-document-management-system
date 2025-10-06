@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DocumentManagementSystem.Application\DocumentManagementSystem.Application.csproj" />
+    <ProjectReference Include="..\DocumentManagementSystem.Messaging\DocumentManagementSystem.Messaging.csproj" />
     <ProjectReference Include="..\DocumentManagementSystem.Model\DocumentManagementSystem.Model.csproj" />
   </ItemGroup>
 
