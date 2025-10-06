@@ -20,6 +20,10 @@ namespace DocumentManagementSystem.REST
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
+			builder.Logging.ClearProviders();
+			builder.Logging.AddConsole();
+			builder.Logging.AddDebug();
+
 			var conn = builder.Configuration.GetConnectionString("Default");
 
 			builder.Services.AddOptions<RabbitMQOptions>()
