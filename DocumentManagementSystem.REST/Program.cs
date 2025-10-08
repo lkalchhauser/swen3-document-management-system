@@ -44,7 +44,12 @@ namespace DocumentManagementSystem.REST
 				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
 			});
 
-			builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
+			// Only configure PostgreSQL if not in Testing environment
+			if (builder.Environment.EnvironmentName != "Testing")
+			{
+				builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
+			}
+
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
 
@@ -78,17 +83,19 @@ namespace DocumentManagementSystem.REST
 			using (var scope = app.Services.CreateScope())
 			{
 				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementSystemContext>();
+				var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
-				if (RECREATE_DATABASE)
+				// Only recreate database if not in Testing environment
+				if (RECREATE_DATABASE && env.EnvironmentName != "Testing")
 				{
 					dbContext.Database.ExecuteSqlRaw(@"
-            DO $$ 
-            DECLARE 
+            DO $$
+            DECLARE
                 r RECORD;
-            BEGIN 
-                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP 
-                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE'; 
-                END LOOP; 
+            BEGIN
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                END LOOP;
             END $$;
         ");
 					dbContext.Database.EnsureCreated();

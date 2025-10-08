@@ -53,7 +53,7 @@ namespace DocumentManagementSystem.Application.Services
 			{
 				CreatedAt = DateTimeOffset.UtcNow,
 				ContentType = dto.ContentType ?? "application/octet-stream",
-				FileSize = 0 // Will be updated later when file is stored
+				FileSize = dto.FileSize
 			};
 
 
