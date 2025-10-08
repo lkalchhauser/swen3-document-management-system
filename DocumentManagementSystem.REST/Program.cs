@@ -4,7 +4,13 @@ using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.Messaging;
+using DocumentManagementSystem.Messaging.Interfaces;
+using DocumentManagementSystem.Messaging.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NLog;
+using NLog.Web;
 
 namespace DocumentManagementSystem.REST
 {
@@ -14,11 +20,36 @@ namespace DocumentManagementSystem.REST
 
 		public static void Main(string[] args)
 		{
-			var builder = WebApplication.CreateBuilder(args);
+			var logger = LogManager.Setup().LoadConfigurationFromFile("nlog.config").GetCurrentClassLogger();
+
+			try
+			{
+				var builder = WebApplication.CreateBuilder(args);
+
+				// Configure NLog
+				builder.Logging.ClearProviders();
+				builder.Host.UseNLog();
 
 			var conn = builder.Configuration.GetConnectionString("Default");
 
-			builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
+			builder.Services.AddOptions<RabbitMQOptions>()
+				.Bind(builder.Configuration.GetSection("RabbitMq"))
+				.ValidateDataAnnotations()
+				.Validate(o => !string.IsNullOrWhiteSpace(o.QueueName), "QueueName required");
+
+			builder.Services.AddSingleton<IMessagePublisherService>(sp =>
+			{
+				var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>();
+				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
+				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
+			});
+
+			// Only configure PostgreSQL if not in Testing environment
+			if (builder.Environment.EnvironmentName != "Testing")
+			{
+				builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
+			}
+
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
 
@@ -52,17 +83,19 @@ namespace DocumentManagementSystem.REST
 			using (var scope = app.Services.CreateScope())
 			{
 				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementSystemContext>();
+				var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
-				if (RECREATE_DATABASE)
+				// Only recreate database if not in Testing environment
+				if (RECREATE_DATABASE && env.EnvironmentName != "Testing")
 				{
 					dbContext.Database.ExecuteSqlRaw(@"
-            DO $$ 
-            DECLARE 
+            DO $$
+            DECLARE
                 r RECORD;
-            BEGIN 
-                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP 
-                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE'; 
-                END LOOP; 
+            BEGIN
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+                    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                END LOOP;
             END $$;
         ");
 					dbContext.Database.EnsureCreated();
@@ -82,7 +115,18 @@ namespace DocumentManagementSystem.REST
 
 			app.MapControllers();
 
+			logger.Info("Starting application");
 			app.Run();
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex, "Application stopped due to exception");
+				throw;
+			}
+			finally
+			{
+				LogManager.Shutdown();
+			}
 		}
 	}
 }

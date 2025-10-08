@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DocumentManagementSystem.DAL\DocumentManagementSystem.DAL.csproj" />
+    <ProjectReference Include="..\DocumentManagementSystem.Messaging\DocumentManagementSystem.Messaging.csproj" />
     <ProjectReference Include="..\DocumentManagementSystem.Model\DocumentManagementSystem.Model.csproj" />
   </ItemGroup>
 

@@ -2,11 +2,20 @@ using AutoFixture;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.Model.ORM;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DocumentManagementSystem.DAL.Tests.Repositories
 {
 	public sealed class DocumentRepositoryTests
 	{
+		private readonly ILogger<DocumentRepository> _logger;
+
+		public DocumentRepositoryTests()
+		{
+			var loggerFactory = LoggerFactory.Create(_ => { });
+			_logger = loggerFactory.CreateLogger<DocumentRepository>();
+		}
+
 		private static DocumentManagementSystemContext CreateInMemoryContext()
 		{
 			var options = new DbContextOptionsBuilder<DocumentManagementSystemContext>()
@@ -22,7 +31,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 			// Arrange
 			var fixture = new Fixture();
 			await using var context = CreateInMemoryContext();
-			var repo = new DocumentRepository(context);
+			var repo = new DocumentRepository(context, _logger);
 
 			var doc = fixture.Build<Document>()
 				 .With(x => x.FileName, "test-add.pdf")
@@ -53,7 +62,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 			await context.Documents.AddAsync(seeded);
 			await context.SaveChangesAsync();
 
-			var repo = new DocumentRepository(context);
+			var repo = new DocumentRepository(context, _logger);
 
 			// Act
 			var loaded = await repo.GetByIdAsync(seeded.Id);
@@ -68,7 +77,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 		{
 			// Arrange
 			await using var context = CreateInMemoryContext();
-			var repo = new DocumentRepository(context);
+			var repo = new DocumentRepository(context, _logger);
 
 			// Act
 			var loaded = await repo.GetByIdAsync(Guid.NewGuid());
@@ -83,7 +92,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 			// Arrange
 			var fixture = new Fixture();
 			await using var context = CreateInMemoryContext();
-			var repo = new DocumentRepository(context);
+			var repo = new DocumentRepository(context, _logger);
 
 			var doc = fixture.Build<Document>()
 				 .With(x => x.FileName, "original.pdf")
@@ -110,7 +119,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 			// Arrange
 			var fixture = new Fixture();
 			await using var context = CreateInMemoryContext();
-			var repo = new DocumentRepository(context);
+			var repo = new DocumentRepository(context, _logger);
 
 			var doc = fixture.Build<Document>()
 				 .With(x => x.FileName, "delete-me.pdf")

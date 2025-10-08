@@ -1,6 +1,18 @@
 name: dms
 
 services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: dms_rabbitmq
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"     # AMQP
+      - "${RABBITMQ_UI_PORT:-9093}:15672"   # Mgmt UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   postgres:
     image: postgres:latest
     container_name: dms_postgres
@@ -26,8 +38,8 @@ services:
     container_name: dms_api
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
+      - rabbitmq
+      - postgres
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
@@ -40,6 +52,22 @@ services:
 
     ports:
       - "${API_PORT:-8081}:8080"
+# TODO: use variables
+  ocrworker:
+    build:
+      context: .
+      dockerfile: ./DocumentManagementSystem.OcrWorker/Dockerfile
+    container_name: dms_ocr_worker
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+      RabbitMq__QueueName: ocr_queue
+    restart: unless-stopped
 
   ui:
     build:
