@@ -1,18 +1,23 @@
-﻿using AutoFixture;
+using AutoFixture;
 using AutoMapper;
 using DocumentManagementSystem.Application.Mapper;
 using DocumentManagementSystem.Application.Services;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories;
+using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace DocumentManagementSystem.Application.Tests.Services;
 
 public sealed class DocumentServiceTests
 {
 	private readonly IMapper _mapper;
+	private readonly Mock<IMessagePublisherService> _mockPublisher;
+	private readonly ILogger<DocumentRepository> _repoLogger;
+	private readonly ILogger<DocumentService> _serviceLogger;
 
 	public DocumentServiceTests()
 	{
@@ -25,6 +30,9 @@ public sealed class DocumentServiceTests
 			loggerFactory
 		);
 		_mapper = config.CreateMapper();
+		_mockPublisher = new Mock<IMessagePublisherService>();
+		_repoLogger = loggerFactory.CreateLogger<DocumentRepository>();
+		_serviceLogger = loggerFactory.CreateLogger<DocumentService>();
 	}
 
 
@@ -43,8 +51,8 @@ public sealed class DocumentServiceTests
 		// Arrange
 		var fixture = new Fixture();
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		var dto = fixture.Build<DocumentCreateDTO>()
 			 .With(x => x.FileName, "create-test.pdf")
@@ -59,6 +67,7 @@ public sealed class DocumentServiceTests
 		Assert.Equal("create-test.pdf", result.FileName);
 		Assert.NotNull(result.Metadata);
 		Assert.Contains("tag1", result.Tags);
+		_mockPublisher.Verify(p => p.PublishAsync(It.IsAny<DocumentUploadMessageDTO>(), It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	[Fact]
@@ -67,8 +76,8 @@ public sealed class DocumentServiceTests
 		// Arrange
 		var fixture = new Fixture();
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		var dto = fixture.Build<DocumentCreateDTO>()
 			 .With(x => x.FileName, "get-test.pdf")
@@ -91,8 +100,8 @@ public sealed class DocumentServiceTests
 	{
 		// Arrange
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		// Act
 		var result = await service.GetByIdAsync(Guid.NewGuid());
@@ -107,8 +116,8 @@ public sealed class DocumentServiceTests
 		// Arrange
 		var fixture = new Fixture();
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		var dto = fixture.Build<DocumentCreateDTO>()
 			 .With(x => x.FileName, "before-update.pdf")
@@ -139,8 +148,8 @@ public sealed class DocumentServiceTests
 		// Arrange
 		var fixture = new Fixture();
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		var updateDto = fixture.Build<DocumentCreateDTO>()
 			 .With(x => x.FileName, "missing.pdf")
@@ -159,8 +168,8 @@ public sealed class DocumentServiceTests
 		// Arrange
 		var fixture = new Fixture();
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		var dto = fixture.Build<DocumentCreateDTO>()
 			 .With(x => x.FileName, "delete-test.pdf")
@@ -181,8 +190,8 @@ public sealed class DocumentServiceTests
 	{
 		// Arrange
 		await using var context = CreateInMemoryContext();
-		var repo = new DocumentRepository(context);
-		var service = new DocumentService(repo, _mapper);
+		var repo = new DocumentRepository(context, _repoLogger);
+		var service = new DocumentService(repo, _mapper, _mockPublisher.Object, _serviceLogger);
 
 		// Act
 		var result = await service.DeleteAsync(Guid.NewGuid());

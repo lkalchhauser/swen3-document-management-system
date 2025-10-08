@@ -1,4 +1,4 @@
-﻿using DocumentManagementSystem.Application.Services.Interfaces;
+using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +21,9 @@ namespace DocumentManagementSystem.REST.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IReadOnlyList<DocumentDTO>>> GetAll(CancellationToken ct)
 		{
+			_logger.LogDebug("Getting all documents");
 			var docs = await _service.GetAllAsync(ct);
+			_logger.LogInformation("Retrieved {Count} documents", docs.Count);
 			return Ok(docs);
 		}
 
@@ -29,13 +31,15 @@ namespace DocumentManagementSystem.REST.Controllers
 		[HttpGet("{id:guid}")]
 		public async Task<ActionResult<DocumentDTO>> GetById(Guid id, CancellationToken ct)
 		{
+			_logger.LogDebug("Getting document by ID: {DocumentId}", id);
 			var doc = await _service.GetByIdAsync(id, ct);
 			if (doc is null)
 			{
-				_logger.LogInformation("Document {DocumentId} not found", id);
+				_logger.LogWarning("Document {DocumentId} not found", id);
 				return NotFound();
 			}
 
+			_logger.LogInformation("Retrieved document {DocumentId}", id);
 			return Ok(doc);
 		}
 
@@ -45,10 +49,13 @@ namespace DocumentManagementSystem.REST.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				_logger.LogWarning("Invalid model state for document creation");
 				return BadRequest(ModelState);
 			}
 
+			_logger.LogInformation("Creating document: {FileName}", dto.FileName);
 			var created = await _service.CreateAsync(dto, ct);
+			_logger.LogInformation("Document created successfully with ID: {DocumentId}", created.Id);
 			return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
 		}
 
@@ -59,16 +66,19 @@ namespace DocumentManagementSystem.REST.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				_logger.LogWarning("Invalid model state for document update: {DocumentId}", id);
 				return BadRequest(ModelState);
 			}
 
+			_logger.LogInformation("Updating document: {DocumentId}", id);
 			var updated = await _service.UpdateAsync(id, dto, ct);
 			if (updated is null)
 			{
-				_logger.LogInformation("Document {DocumentId} not found for update", id);
+				_logger.LogWarning("Document {DocumentId} not found for update", id);
 				return NotFound();
 			}
 
+			_logger.LogInformation("Document {DocumentId} updated successfully", id);
 			return Ok(updated);
 		}
 
@@ -78,8 +88,11 @@ namespace DocumentManagementSystem.REST.Controllers
 		{
 			if (file == null || file.Length == 0)
 			{
+				_logger.LogWarning("Upload attempt with no file provided");
 				return BadRequest("No file provided");
 			}
+
+			_logger.LogInformation("Uploading file: {FileName}, Size: {FileSize} bytes", file.FileName, file.Length);
 
 			// Parse tags if provided
 			var tagList = new List<string>();
@@ -89,6 +102,7 @@ namespace DocumentManagementSystem.REST.Controllers
 					.Select(t => t.Trim())
 					.Where(t => !string.IsNullOrEmpty(t))
 					.ToList();
+				_logger.LogDebug("Parsed {TagCount} tags for file upload", tagList.Count);
 			}
 
 			// Create DTO from uploaded file
@@ -103,6 +117,7 @@ namespace DocumentManagementSystem.REST.Controllers
 			// For now, we'll create the document record
 			// In a real implementation, you'd also save the file to storage
 			var created = await _service.CreateAsync(dto, ct);
+			_logger.LogInformation("File uploaded successfully with ID: {DocumentId}", created.Id);
 			return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
 		}
 
@@ -110,13 +125,15 @@ namespace DocumentManagementSystem.REST.Controllers
 		[HttpDelete("{id:guid}")]
 		public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
 		{
+			_logger.LogInformation("Deleting document: {DocumentId}", id);
 			var success = await _service.DeleteAsync(id, ct);
 			if (!success)
 			{
-				_logger.LogInformation("Document {DocumentId} not found for delete", id);
+				_logger.LogWarning("Document {DocumentId} not found for delete", id);
 				return NotFound();
 			}
 
+			_logger.LogInformation("Document {DocumentId} deleted successfully", id);
 			return NoContent();
 		}
 	}

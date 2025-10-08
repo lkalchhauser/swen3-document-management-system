@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
@@ -26,6 +26,8 @@ public class MessagePublisherService : IMessagePublisherService, IAsyncDisposabl
 	public static async Task<MessagePublisherService> CreateAsync(
 		IOptions<RabbitMQOptions> options, ILogger<MessagePublisherService> logger)
 	{
+		logger.LogInformation("Initializing MessagePublisherService, connecting to RabbitMQ at {HostName}:{Port}", options.Value.HostName, options.Value.Port);
+
 		var factory = new ConnectionFactory
 		{
 			HostName = options.Value.HostName,
@@ -34,24 +36,37 @@ public class MessagePublisherService : IMessagePublisherService, IAsyncDisposabl
 			Password = options.Value.Password
 		};
 
-		var connection = await factory.CreateConnectionAsync();
-		var channel = await connection.CreateChannelAsync();
+		try
+		{
+			var connection = await factory.CreateConnectionAsync();
+			logger.LogInformation("Successfully connected to RabbitMQ");
 
-		await channel.QueueDeclareAsync(
-			queue: options.Value.QueueName,
-			durable: true,
-			exclusive: false,
-			autoDelete: false,
-			arguments: null
-		);
+			var channel = await connection.CreateChannelAsync();
+			logger.LogDebug("RabbitMQ channel created");
 
-		return new MessagePublisherService(options, logger, connection, channel);
+			await channel.QueueDeclareAsync(
+				queue: options.Value.QueueName,
+				durable: true,
+				exclusive: false,
+				autoDelete: false,
+				arguments: null
+			);
+			logger.LogInformation("Queue '{QueueName}' declared", options.Value.QueueName);
+
+			return new MessagePublisherService(options, logger, connection, channel);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed to initialize MessagePublisherService");
+			throw;
+		}
 	}
 
 	public async Task PublishAsync<T>(T message, CancellationToken ct = default)
 	{
 		try
 		{
+			_logger.LogDebug("Serializing message of type {MessageType}", typeof(T).Name);
 			var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
 			var props = new BasicProperties { Persistent = true };
@@ -65,22 +80,27 @@ public class MessagePublisherService : IMessagePublisherService, IAsyncDisposabl
 				cancellationToken: ct
 			);
 
-			_logger.LogInformation("Published message to queue {QueueName}", _options.QueueName);
+			_logger.LogInformation("Published message to queue '{QueueName}', Type={MessageType}", _options.QueueName, typeof(T).Name);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error publishing message");
+			_logger.LogError(ex, "Error publishing message of type {MessageType} to queue '{QueueName}'", typeof(T).Name, _options.QueueName);
+			throw;
 		}
 	}
 
 	public async ValueTask DisposeAsync()
 	{
+		_logger.LogInformation("Disposing MessagePublisherService");
 		try
 		{
 			await _channel.CloseAsync();
 			await _channel.DisposeAsync();
+			_logger.LogDebug("RabbitMQ channel disposed");
+
 			await _connection.CloseAsync();
 			await _connection.DisposeAsync();
+			_logger.LogDebug("RabbitMQ connection disposed");
 		}
 		catch (Exception ex)
 		{

@@ -9,6 +9,8 @@ using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NLog;
+using NLog.Web;
 
 namespace DocumentManagementSystem.REST
 {
@@ -18,11 +20,15 @@ namespace DocumentManagementSystem.REST
 
 		public static void Main(string[] args)
 		{
-			var builder = WebApplication.CreateBuilder(args);
+			var logger = LogManager.Setup().LoadConfigurationFromFile("nlog.config").GetCurrentClassLogger();
 
-			builder.Logging.ClearProviders();
-			builder.Logging.AddConsole();
-			builder.Logging.AddDebug();
+			try
+			{
+				var builder = WebApplication.CreateBuilder(args);
+
+				// Configure NLog
+				builder.Logging.ClearProviders();
+				builder.Host.UseNLog();
 
 			var conn = builder.Configuration.GetConnectionString("Default");
 
@@ -102,7 +108,18 @@ namespace DocumentManagementSystem.REST
 
 			app.MapControllers();
 
+			logger.Info("Starting application");
 			app.Run();
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex, "Application stopped due to exception");
+				throw;
+			}
+			finally
+			{
+				LogManager.Shutdown();
+			}
 		}
 	}
 }

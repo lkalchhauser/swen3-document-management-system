@@ -56,7 +56,7 @@ services:
   ocrworker:
     build:
       context: .
-      dockerfile: /DocumentManagementSystem.OcrWorker/Dockerfile
+      dockerfile: ./DocumentManagementSystem.OcrWorker/Dockerfile
     container_name: dms_ocr_worker
     depends_on:
       rabbitmq:
