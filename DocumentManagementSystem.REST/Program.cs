@@ -7,8 +7,10 @@ using DocumentManagementSystem.DAL.Repositories.Interfaces;
 using DocumentManagementSystem.Messaging;
 using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
+using DocumentManagementSystem.REST.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Minio;
 using NLog;
 using NLog.Web;
 
@@ -43,6 +45,24 @@ namespace DocumentManagementSystem.REST
 				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
 				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
 			});
+
+			// Configure MinIO client (following demo pattern)
+			builder.Services.AddSingleton<IMinioClient>(sp =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				var endpoint = config["MinIO:Endpoint"] ?? "localhost:9000";
+				var accessKey = config["MinIO:AccessKey"] ?? "minioadmin";
+				var secretKey = config["MinIO:SecretKey"] ?? "minioadmin";
+				var useSSL = bool.Parse(config["MinIO:UseSSL"] ?? "false");
+
+				return new MinioClient()
+					.WithEndpoint(endpoint)
+					.WithCredentials(accessKey, secretKey)
+					.WithSSL(useSSL)
+					.Build();
+			});
+
+			builder.Services.AddScoped<IStorageService, MinioStorageService>();
 
 			// Only configure PostgreSQL if not in Testing environment
 			if (builder.Environment.EnvironmentName != "Testing")

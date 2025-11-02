@@ -42,7 +42,7 @@ namespace DocumentManagementSystem.Application.Services
 			return _mapper.Map<IReadOnlyList<DocumentDTO>>(docs);
 		}
 
-		public async Task<DocumentDTO> CreateAsync(DocumentCreateDTO dto, CancellationToken ct = default)
+		public async Task<DocumentDTO> CreateAsync(DocumentCreateDTO dto, string? storagePath = null, CancellationToken ct = default)
 		{
 			_logger.LogInformation("Creating new document: {FileName}", dto.FileName);
 			var doc = _mapper.Map<Document>(dto);
@@ -53,18 +53,19 @@ namespace DocumentManagementSystem.Application.Services
 			{
 				CreatedAt = DateTimeOffset.UtcNow,
 				ContentType = dto.ContentType ?? "application/octet-stream",
-				FileSize = dto.FileSize
+				FileSize = dto.FileSize,
+				StoragePath = storagePath
 			};
 
 
 			await _repository.AddAsync(doc, ct);
 			await _repository.SaveChangesAsync(ct);
-			_logger.LogInformation("Document saved to repository with ID: {DocumentId}", doc.Id);
+			_logger.LogInformation("Document saved to repository with ID: {DocumentId}, StoragePath: {StoragePath}", doc.Id, storagePath ?? "null");
 
 			var message = new DocumentUploadMessageDTO(
 				DocumentId: doc.Id,
 				FileName: doc.FileName,
-				StoragePath: null,
+				StoragePath: storagePath,
 				UploadedAtUtc: doc.CreatedAt
 			);
 

@@ -2,6 +2,15 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+
+# Install Tesseract OCR and dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libtesseract-dev \
+    libleptonica-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 USER $APP_UID
 WORKDIR /app
 
@@ -25,4 +34,8 @@ RUN dotnet publish "./DocumentManagementSystem.OcrWorker.csproj" -c $BUILD_CONFI
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Set environment variable for Tesseract
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+
 ENTRYPOINT ["dotnet", "DocumentManagementSystem.OcrWorker.dll"]
