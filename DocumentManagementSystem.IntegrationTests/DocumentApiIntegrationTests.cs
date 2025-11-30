@@ -29,10 +29,10 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
             Tags = new List<string> { "integration", "test" }
         };
 
-        // Act - Create
+        // Act 
         var createResponse = await _client.PostAsJsonAsync("/api/document", createDto);
 
-        // Assert - Create
+        // Assert 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var createdDoc = await createResponse.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(createdDoc);
@@ -40,17 +40,16 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         Assert.Equal(2, createdDoc.Tags.Count);
         Assert.Contains("integration", createdDoc.Tags);
 
-        // Act - Retrieve by ID
+        // Act 
         var getResponse = await _client.GetAsync($"/api/document/{createdDoc.Id}");
 
-        // Assert - Retrieve
+        // Assert 
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var retrievedDoc = await getResponse.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(retrievedDoc);
         Assert.Equal(createdDoc.Id, retrievedDoc.Id);
         Assert.Equal("integration-test.pdf", retrievedDoc.FileName);
 
-        // Verify message was published
         _factory.MockMessagePublisher.Verify(
             m => m.PublishAsync(It.IsAny<DocumentUploadMessageDTO>(), It.IsAny<CancellationToken>()),
             Times.Once
@@ -60,7 +59,7 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
     [Fact]
     public async Task EndToEnd_UpdateDocument_PersistsChanges()
     {
-        // Arrange - Create initial document
+        // Arrange 
         var createDto = new DocumentCreateDTO
         {
             FileName = "original.pdf",
@@ -81,10 +80,10 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
             Tags = new List<string> { "updated", "modified" }
         };
 
-        // Act - Update
+        // Act 
         var updateResponse = await _client.PutAsJsonAsync($"/api/document/{createdDoc.Id}", updateDto);
 
-        // Assert - Update response
+        // Assert 
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updatedDoc = await updateResponse.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(updatedDoc);
@@ -93,7 +92,6 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         Assert.Contains("updated", updatedDoc.Tags);
         Assert.Contains("modified", updatedDoc.Tags);
 
-        // Verify persistence
         var getResponse = await _client.GetAsync($"/api/document/{createdDoc.Id}");
         var retrievedDoc = await getResponse.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(retrievedDoc);
@@ -103,7 +101,7 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
     [Fact]
     public async Task EndToEnd_DeleteDocument_RemovesFromDatabase()
     {
-        // Arrange - Create document
+        // Arrange 
         var createDto = new DocumentCreateDTO
         {
             FileName = "to-delete.pdf",
@@ -116,13 +114,12 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         var createdDoc = await createResponse.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(createdDoc);
 
-        // Act - Delete
+        // Act 
         var deleteResponse = await _client.DeleteAsync($"/api/document/{createdDoc.Id}");
 
-        // Assert - Delete response
+        // Assert 
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        // Verify document is gone
         var getResponse = await _client.GetAsync($"/api/document/{createdDoc.Id}");
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
@@ -130,7 +127,7 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
     [Fact]
     public async Task EndToEnd_GetAllDocuments_ReturnsAllCreatedDocuments()
     {
-        // Arrange - Create multiple documents
+        // Arrange 
         var docs = new[]
         {
             new DocumentCreateDTO { FileName = "doc1.pdf", FileSize = 100, ContentType = "application/pdf", Tags = new List<string> { "tag1" } },
@@ -150,7 +147,7 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var allDocs = await response.Content.ReadFromJsonAsync<List<DocumentDTO>>();
         Assert.NotNull(allDocs);
-        Assert.True(allDocs.Count >= 3); // At least the 3 we created
+        Assert.True(allDocs.Count >= 3); 
     }
 
     [Fact]
@@ -169,8 +166,8 @@ public class DocumentApiIntegrationTests : IClassFixture<CustomWebApplicationFac
     [Fact]
     public async Task Create_InvalidData_ReturnsBadRequest()
     {
-        // Arrange - Missing required fields
-        var invalidDto = new { }; // Empty object
+        // Arrange 
+        var invalidDto = new { }; 
 
         var content = new StringContent(
             System.Text.Json.JsonSerializer.Serialize(invalidDto),

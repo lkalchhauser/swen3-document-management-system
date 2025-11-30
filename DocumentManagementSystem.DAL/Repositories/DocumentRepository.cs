@@ -31,6 +31,20 @@ namespace DocumentManagementSystem.DAL.Repositories
 			return doc;
 		}
 
+		public async Task<Document?> GetByIdWithMetadataAsync(Guid id, CancellationToken ct = default)
+		{
+			_logger.LogDebug("Querying database for document {DocumentId} with metadata", id);
+			var doc = await _context.Documents
+				.Include(d => d.Metadata)
+				.FirstOrDefaultAsync(d => d.Id == id, ct);
+
+			if (doc is null)
+			{
+				_logger.LogDebug("Document {DocumentId} not found in database", id);
+			}
+			return doc;
+		}
+
 		public async Task<IReadOnlyList<Document>> GetAllAsync(CancellationToken ct = default)
 		{
 			_logger.LogDebug("Querying database for all documents");

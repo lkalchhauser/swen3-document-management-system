@@ -99,6 +99,8 @@ This Document Management System (DMS) is a full-stack application designed to ma
 - ✅ **Unit Testing**: 31+ tests covering controllers, services, repositories
 - ✅ **Validation**: Input validation across all layers
 - ✅ **Exception Handling**: Consistent error handling throughout
+- ✅ **OCR Processing**: Hybrid text extraction with Tesseract OCR
+- ✅ **AI Summarization**: Google Gemini AI integration for document summaries
 
 ## 🛠️ Technologies
 
@@ -108,8 +110,16 @@ This Document Management System (DMS) is a full-stack application designed to ma
 - **Entity Framework Core 9** - ORM
 - **PostgreSQL** - Database
 - **RabbitMQ** - Message Queue
+- **MinIO** - Object storage for documents
 - **AutoMapper** - Object mapping
 - **NLog** - Logging framework
+
+### OCR & AI
+- **Tesseract OCR 5.3** - Text extraction from images
+- **PDFium (Docnet.Core)** - PDF rendering and text extraction
+- **poppler-utils (pdftoppm)** - PDF to image conversion
+- **Google Gemini AI** - AI-powered document summarization
+- **Gemini 2.5 Flash Model** - Fast, efficient text summarization
 
 ### Frontend
 - **React 18** - UI Framework
@@ -188,6 +198,13 @@ RABBITMQ_UI_PORT=9093
 PGADMIN_PORT=9091
 PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=admin_pw
+
+# Google Gemini API Configuration
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MAX_RETRIES=3
+GEMINI_TIMEOUT_SECONDS=30
+GEMINI_MAX_PROMPT_LENGTH=10000
 ```
 
 ## 📚 API Documentation

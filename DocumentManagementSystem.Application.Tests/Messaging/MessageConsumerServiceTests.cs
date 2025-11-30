@@ -8,9 +8,6 @@ using Moq;
 
 namespace DocumentManagementSystem.Application.Tests.Messaging;
 
-/// <summary>
-/// Test implementation of MessageConsumerService for testing purposes
-/// </summary>
 public class TestMessageConsumer : MessageConsumerService<DocumentUploadMessageDTO>
 {
 	public DocumentUploadMessageDTO? LastProcessedMessage { get; private set; }
@@ -28,7 +25,6 @@ public class TestMessageConsumer : MessageConsumerService<DocumentUploadMessageD
 		return Task.CompletedTask;
 	}
 
-	// Public wrapper for testing
 	public Task TestHandleMessageAsync(DocumentUploadMessageDTO message, CancellationToken ct = default)
 	{
 		return HandleMessageAsync(message, ct);
@@ -72,9 +68,6 @@ public sealed class MessageConsumerServiceTests
 	[Fact]
 	public async Task HandleMessageAsync_ProcessesMessage_UpdatesProperties()
 	{
-		// This test verifies that the abstract method must be implemented
-		// The TestMessageConsumer implementation proves this works
-
 		// Arrange
 		var consumer = new TestMessageConsumer(_mockOptions.Object, _mockLogger.Object);
 		var message = new DocumentUploadMessageDTO(

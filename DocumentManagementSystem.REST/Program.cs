@@ -1,3 +1,4 @@
+using DocumentManagementSystem.Application.Configuration;
 using DocumentManagementSystem.Application.Mapper;
 using DocumentManagementSystem.Application.Services;
 using DocumentManagementSystem.Application.Services.Interfaces;
@@ -9,6 +10,7 @@ using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Minio;
 using NLog;
 using NLog.Web;
 
@@ -37,12 +39,32 @@ namespace DocumentManagementSystem.REST
 				.ValidateDataAnnotations()
 				.Validate(o => !string.IsNullOrWhiteSpace(o.QueueName), "QueueName required");
 
+			builder.Services.AddOptions<MinioOptions>()
+				.Bind(builder.Configuration.GetSection(MinioOptions.SectionName));
+
 			builder.Services.AddSingleton<IMessagePublisherService>(sp =>
 			{
 				var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>();
 				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
 				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
 			});
+
+			builder.Services.AddSingleton<IMinioClient>(sp =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				var endpoint = config["MinIO:Endpoint"] ?? "localhost:9000";
+				var accessKey = config["MinIO:AccessKey"] ?? "minioadmin";
+				var secretKey = config["MinIO:SecretKey"] ?? "minioadmin";
+				var useSSL = bool.Parse(config["MinIO:UseSSL"] ?? "false");
+
+				return new MinioClient()
+					.WithEndpoint(endpoint)
+					.WithCredentials(accessKey, secretKey)
+					.WithSSL(useSSL)
+					.Build();
+			});
+
+			builder.Services.AddScoped<IStorageService, MinioStorageService>();
 
 			// Only configure PostgreSQL if not in Testing environment
 			if (builder.Environment.EnvironmentName != "Testing")
