@@ -2,7 +2,6 @@ using AutoFixture;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using DocumentManagementSystem.REST.Controllers;
-using DocumentManagementSystem.REST.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,6 @@ namespace DocumentManagementSystem.Application.Tests.Controllers;
 public sealed class DocumentControllerTests
 {
 	private readonly Mock<IDocumentService> _mockService;
-	private readonly Mock<IStorageService> _mockStorageService;
 	private readonly Mock<ILogger<DocumentController>> _mockLogger;
 	private readonly DocumentController _controller;
 	private readonly Fixture _fixture;
@@ -21,9 +19,8 @@ public sealed class DocumentControllerTests
 	public DocumentControllerTests()
 	{
 		_mockService = new Mock<IDocumentService>();
-		_mockStorageService = new Mock<IStorageService>();
 		_mockLogger = new Mock<ILogger<DocumentController>>();
-		_controller = new DocumentController(_mockService.Object, _mockStorageService.Object, _mockLogger.Object);
+		_controller = new DocumentController(_mockService.Object, _mockLogger.Object);
 		_fixture = new Fixture();
 	}
 
@@ -106,7 +103,7 @@ public sealed class DocumentControllerTests
 			.With(d => d.FileName, "test.pdf")
 			.Create();
 
-		_mockService.Setup(s => s.CreateAsync(createDto, null, It.IsAny<CancellationToken>()))
+		_mockService.Setup(s => s.CreateAsync(createDto, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(createdDoc);
 
 		// Act
@@ -235,17 +232,12 @@ public sealed class DocumentControllerTests
 		fileMock.Setup(f => f.FileName).Returns(fileName);
 		fileMock.Setup(f => f.Length).Returns(ms.Length);
 		fileMock.Setup(f => f.ContentType).Returns("application/pdf");
-		fileMock.Setup(f => f.OpenReadStream()).Returns(ms);
-
-		var storagePath = "documents/test-guid_test.pdf";
-		_mockStorageService.Setup(s => s.UploadFileAsync(It.IsAny<Stream>(), fileName, "application/pdf", It.IsAny<CancellationToken>()))
-			.ReturnsAsync(storagePath);
 
 		var createdDoc = _fixture.Build<DocumentDTO>()
 			.With(d => d.FileName, fileName)
 			.Create();
 
-		_mockService.Setup(s => s.CreateAsync(It.IsAny<DocumentCreateDTO>(), storagePath, It.IsAny<CancellationToken>()))
+		_mockService.Setup(s => s.CreateAsync(It.IsAny<DocumentCreateDTO>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(createdDoc);
 
 		// Act
@@ -288,19 +280,13 @@ public sealed class DocumentControllerTests
 	{
 		// Arrange
 		var fileMock = new Mock<IFormFile>();
-		var ms = new MemoryStream();
 		fileMock.Setup(f => f.FileName).Returns("test.pdf");
 		fileMock.Setup(f => f.Length).Returns(100);
 		fileMock.Setup(f => f.ContentType).Returns("application/pdf");
-		fileMock.Setup(f => f.OpenReadStream()).Returns(ms);
-
-		var storagePath = "documents/test-guid_test.pdf";
-		_mockStorageService.Setup(s => s.UploadFileAsync(It.IsAny<Stream>(), "test.pdf", "application/pdf", It.IsAny<CancellationToken>()))
-			.ReturnsAsync(storagePath);
 
 		DocumentCreateDTO? capturedDto = null;
-		_mockService.Setup(s => s.CreateAsync(It.IsAny<DocumentCreateDTO>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-			.Callback<DocumentCreateDTO, string?, CancellationToken>((dto, path, ct) => capturedDto = dto)
+		_mockService.Setup(s => s.CreateAsync(It.IsAny<DocumentCreateDTO>(), It.IsAny<CancellationToken>()))
+			.Callback<DocumentCreateDTO, CancellationToken>((dto, ct) => capturedDto = dto)
 			.ReturnsAsync(_fixture.Create<DocumentDTO>());
 
 		// Act

@@ -24,7 +24,6 @@
     <ProjectReference Include="..\DocumentManagementSystem.Application\DocumentManagementSystem.Application.csproj" />
     <ProjectReference Include="..\DocumentManagementSystem.Messaging\DocumentManagementSystem.Messaging.csproj" />
     <ProjectReference Include="..\DocumentManagementSystem.Model\DocumentManagementSystem.Model.csproj" />
-    <ProjectReference Include="..\DocumentManagementSystem.OcrWorker\DocumentManagementSystem.OcrWorker.csproj" />
     <ProjectReference Include="..\DocumentManagementSystem.REST\DocumentManagementSystem.REST.csproj" />
   </ItemGroup>
 
