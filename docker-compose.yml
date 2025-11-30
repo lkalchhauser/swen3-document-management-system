@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 5
   postgres:
-    image: postgres:16-alpine
+    image: postgres:latest
     container_name: dms_postgres
     restart: unless-stopped
     environment:
@@ -31,25 +31,6 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
 
-  minio:
-    image: minio/minio
-    container_name: dms_minio
-    restart: unless-stopped
-    ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - minio_data:/data
-
   api:
     build:
       context: .
@@ -59,7 +40,6 @@ services:
     depends_on:
       - rabbitmq
       - postgres
-      - minio
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
@@ -69,12 +49,6 @@ services:
         Username=${POSTGRES_USER:-dms};
         Password=${POSTGRES_PASSWORD:-dms_pw};
         Include Error Detail=true; Pooling=true
-
-      MinIO__Endpoint: minio:9000
-      MinIO__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
-      MinIO__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      MinIO__BucketName: documents
-      MinIO__UseSSL: false
 
     ports:
       - "${API_PORT:-8081}:8080"
@@ -87,28 +61,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
     environment:
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       RabbitMq__QueueName: ocr_queue
-
-      ConnectionStrings__Default: >
-        Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};
-        Username=${POSTGRES_USER:-dms};
-        Password=${POSTGRES_PASSWORD:-dms_pw};
-        Include Error Detail=true; Pooling=true
-
-      MinIO__Endpoint: minio:9000
-      MinIO__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
-      MinIO__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      MinIO__BucketName: documents
-      MinIO__UseSSL: false
     restart: unless-stopped
 
   ui:
@@ -140,5 +98,4 @@ services:
 
 volumes:
   pg_data:
-  pgadmin_data:
-  minio_data: 
+  pgadmin_data: 

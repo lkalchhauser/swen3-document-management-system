@@ -1,6 +1,5 @@
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
-using DocumentManagementSystem.REST.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentManagementSystem.REST.Controllers
@@ -10,13 +9,11 @@ namespace DocumentManagementSystem.REST.Controllers
 	public sealed class DocumentController : ControllerBase
 	{
 		private readonly IDocumentService _service;
-		private readonly IStorageService _storageService;
 		private readonly ILogger<DocumentController> _logger;
 
-		public DocumentController(IDocumentService service, IStorageService storageService, ILogger<DocumentController> logger)
+		public DocumentController(IDocumentService service, ILogger<DocumentController> logger)
 		{
 			_service = service;
-			_storageService = storageService;
 			_logger = logger;
 		}
 
@@ -57,7 +54,7 @@ namespace DocumentManagementSystem.REST.Controllers
 			}
 
 			_logger.LogInformation("Creating document: {FileName}", dto.FileName);
-			var created = await _service.CreateAsync(dto, null, ct);
+			var created = await _service.CreateAsync(dto, ct);
 			_logger.LogInformation("Document created successfully with ID: {DocumentId}", created.Id);
 			return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
 		}
@@ -97,14 +94,6 @@ namespace DocumentManagementSystem.REST.Controllers
 
 			_logger.LogInformation("Uploading file: {FileName}, Size: {FileSize} bytes", file.FileName, file.Length);
 
-			// Upload file to MinIO
-			string storagePath;
-			await using (var fileStream = file.OpenReadStream())
-			{
-				storagePath = await _storageService.UploadFileAsync(fileStream, file.FileName, file.ContentType, ct);
-			}
-			_logger.LogInformation("File saved to MinIO: {StoragePath}", storagePath);
-
 			// Parse tags if provided
 			var tagList = new List<string>();
 			if (!string.IsNullOrWhiteSpace(tags))
@@ -125,8 +114,9 @@ namespace DocumentManagementSystem.REST.Controllers
 				Tags = tagList
 			};
 
-			// Create document record with storage path
-			var created = await _service.CreateAsync(dto, storagePath, ct);
+			// For now, we'll create the document record
+			// In a real implementation, you'd also save the file to storage
+			var created = await _service.CreateAsync(dto, ct);
 			_logger.LogInformation("File uploaded successfully with ID: {DocumentId}", created.Id);
 			return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
 		}
