@@ -11,5 +11,14 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 4173,
+  },
+  build: {
+    target: 'esnext',
+    minify: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      }
+    }
   }
 })

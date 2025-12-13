@@ -1,3 +1,4 @@
+using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.REST;
@@ -14,17 +15,16 @@ namespace DocumentManagementSystem.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<DocumentManagementSystem.REST.Program>
 {
     public Mock<IMessagePublisherService> MockMessagePublisher { get; } = new();
+    public Mock<IStorageService> MockStorageService { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(services =>
         {
-            // Remove DbContext
             services.RemoveAll<DocumentManagementSystemContext>();
             services.RemoveAll<DbContextOptions<DocumentManagementSystemContext>>();
             services.RemoveAll<DbContextOptions>();
 
-            // Add InMemory database for tests with unique name per factory instance
             var uniqueDbName = $"InMemoryTestDb_{Guid.NewGuid()}";
             services.AddDbContext<DocumentManagementSystemContext>(options =>
             {
@@ -32,9 +32,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<DocumentManagem
                        .EnableSensitiveDataLogging();
             });
 
-            // Replace MessagePublisher with mock
             services.RemoveAll<IMessagePublisherService>();
             services.AddSingleton(MockMessagePublisher.Object);
+
+            services.RemoveAll<IStorageService>();
+            MockStorageService
+                .Setup(s => s.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Stream stream, string fileName, string contentType, CancellationToken ct) =>
+                    $"documents/test-{Guid.NewGuid()}_{fileName}");
+            services.AddSingleton(MockStorageService.Object);
         });
 
         builder.UseEnvironment("Testing");

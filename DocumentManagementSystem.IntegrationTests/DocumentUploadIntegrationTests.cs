@@ -20,7 +20,7 @@ public class DocumentUploadIntegrationTests : IClassFixture<CustomWebApplication
     {
         // Arrange
         var content = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x25, 0x50, 0x44, 0x46 }); // PDF magic bytes
+        var fileContent = new ByteArrayContent(new byte[] { 0x25, 0x50, 0x44, 0x46 }); 
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
         content.Add(fileContent, "file", "upload-test.pdf");
         content.Add(new StringContent("important,upload,test"), "tags");
@@ -34,7 +34,7 @@ public class DocumentUploadIntegrationTests : IClassFixture<CustomWebApplication
         var createdDoc = await response.Content.ReadFromJsonAsync<DocumentDTO>();
         Assert.NotNull(createdDoc);
         Assert.Equal("upload-test.pdf", createdDoc.FileName);
-        Assert.Equal(4, createdDoc.Metadata?.FileSize); // 4 bytes
+        Assert.Equal(4, createdDoc.Metadata?.FileSize); 
         Assert.Equal("application/pdf", createdDoc.Metadata?.ContentType);
         Assert.Equal(3, createdDoc.Tags.Count);
         Assert.Contains("important", createdDoc.Tags);
@@ -96,7 +96,7 @@ public class DocumentUploadIntegrationTests : IClassFixture<CustomWebApplication
     public async Task Upload_LargeFile_CreatesDocumentWithCorrectSize()
     {
         // Arrange
-        var largeContent = new byte[1024 * 100]; // 100 KB
+        var largeContent = new byte[1024 * 100]; 
         new Random().NextBytes(largeContent);
 
         var content = new MultipartFormDataContent();

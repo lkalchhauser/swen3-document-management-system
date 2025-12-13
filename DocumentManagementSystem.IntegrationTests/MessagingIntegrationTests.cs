@@ -33,7 +33,6 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         Assert.True(response.IsSuccessStatusCode);
 
-        // Verify that PublishAsync was called with correct message type
         _factory.MockMessagePublisher.Verify(
             m => m.PublishAsync(
                 It.Is<DocumentUploadMessageDTO>(msg =>
@@ -131,7 +130,7 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task UpdateDocument_DoesNotPublishMessage()
     {
-        // Arrange - Create document first
+        // Arrange 
         var createDto = new DocumentCreateDTO
         {
             FileName = "original.pdf",
@@ -143,7 +142,6 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
         var createResponse = await _client.PostAsJsonAsync("/api/document", createDto);
         var createdDoc = await createResponse.Content.ReadFromJsonAsync<DocumentDTO>();
 
-        // Reset mock to clear the create call
         _factory.MockMessagePublisher.Reset();
 
         var updateDto = new DocumentCreateDTO
@@ -154,10 +152,10 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
             Tags = new List<string>()
         };
 
-        // Act - Update document
+        // Act 
         await _client.PutAsJsonAsync($"/api/document/{createdDoc!.Id}", updateDto);
 
-        // Assert - Update should NOT publish a message
+        // Assert 
         _factory.MockMessagePublisher.Verify(
             m => m.PublishAsync(It.IsAny<DocumentUploadMessageDTO>(), It.IsAny<CancellationToken>()),
             Times.Never,
@@ -168,7 +166,7 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
     [Fact]
     public async Task DeleteDocument_DoesNotPublishMessage()
     {
-        // Arrange - Create document first
+        // Arrange 
         var createDto = new DocumentCreateDTO
         {
             FileName = "to-delete.pdf",
@@ -180,13 +178,12 @@ public class MessagingIntegrationTests : IClassFixture<CustomWebApplicationFacto
         var createResponse = await _client.PostAsJsonAsync("/api/document", createDto);
         var createdDoc = await createResponse.Content.ReadFromJsonAsync<DocumentDTO>();
 
-        // Reset mock to clear the create call
         _factory.MockMessagePublisher.Reset();
 
-        // Act - Delete document
+        // Act 
         await _client.DeleteAsync($"/api/document/{createdDoc!.Id}");
 
-        // Assert - Delete should NOT publish a message
+        // Assert 
         _factory.MockMessagePublisher.Verify(
             m => m.PublishAsync(It.IsAny<DocumentUploadMessageDTO>(), It.IsAny<CancellationToken>()),
             Times.Never,
