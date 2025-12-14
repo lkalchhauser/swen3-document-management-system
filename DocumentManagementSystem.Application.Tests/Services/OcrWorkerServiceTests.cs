@@ -16,6 +16,8 @@ public class OcrWorkerServiceTests
 	private readonly Mock<IOcrService> _mockOcrService;
 	private readonly Mock<IGenAiService> _mockGenAiService;
 	private readonly Mock<IDocumentUpdateService> _mockDocumentUpdateService;
+	private readonly Mock<ISearchService> _mockSearchService;
+	private readonly Mock<IDocumentService> _mockDocumentService;
 	private readonly Mock<ILogger<OcrWorkerService>> _mockLogger;
 	private readonly Mock<IOptions<RabbitMQOptions>> _mockOptions;
 	private readonly IServiceProvider _serviceProvider;
@@ -26,6 +28,8 @@ public class OcrWorkerServiceTests
 		_mockOcrService = new Mock<IOcrService>();
 		_mockGenAiService = new Mock<IGenAiService>();
 		_mockDocumentUpdateService = new Mock<IDocumentUpdateService>();
+		_mockSearchService = new Mock<ISearchService>();
+		_mockDocumentService = new Mock<IDocumentService>();
 		_mockLogger = new Mock<ILogger<OcrWorkerService>>();
 		_mockOptions = new Mock<IOptions<RabbitMQOptions>>();
 
@@ -47,6 +51,8 @@ public class OcrWorkerServiceTests
 		services.AddScoped(_ => _mockOcrService.Object);
 		services.AddScoped(_ => _mockGenAiService.Object);
 		services.AddScoped(_ => _mockDocumentUpdateService.Object);
+		services.AddScoped(_ => _mockSearchService.Object);     // NEW
+		services.AddScoped(_ => _mockDocumentService.Object);   // NEW
 		_serviceProvider = services.BuildServiceProvider();
 	}
 
@@ -77,6 +83,12 @@ public class OcrWorkerServiceTests
 			.Setup(x => x.UpdateWithOcrAndSummaryAsync(documentId, extractedText, It.IsAny<string>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(true);
 
+		// NEW: Mock fetching the document for indexing
+		var fullDocDto = new DocumentDTO { Id = documentId, FileName = "test.pdf" };
+		_mockDocumentService
+			.Setup(x => x.GetByIdAsync(documentId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(fullDocDto);
+
 		var sut = new OcrWorkerService(_mockOptions.Object, _mockLogger.Object, _serviceProvider);
 
 		// Act
@@ -93,6 +105,11 @@ public class OcrWorkerServiceTests
 
 		_mockDocumentUpdateService.Verify(
 			x => x.UpdateWithOcrAndSummaryAsync(documentId, extractedText, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+			Times.Once);
+
+		// NEW: Verify indexing was called
+		_mockSearchService.Verify(
+			x => x.IndexDocumentAsync(It.Is<DocumentDTO>(d => d.Id == documentId), It.IsAny<CancellationToken>()),
 			Times.Once);
 	}
 
