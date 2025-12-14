@@ -1,0 +1,10 @@
+2025-12-14 01:07:36.8731 Info Loading assembly name: NLog.Extensions.Hosting
+2025-12-14 01:07:36.8839 Info NLog.Extensions.Hosting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.4.0.625. Product version: 5.4.0+5cf0f9d17ffe57b5271ea8839bffd46d43bef3e9. GlobalAssemblyCache: False
+2025-12-14 01:07:36.9206 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2025-12-14 01:07:36.9206 Info Registered target NLog.Targets.FileTarget(Name=ownFile)
+2025-12-14 01:07:36.9258 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-12-14 01:07:36.9357 Info Registered target NLog.Targets.ColoredConsoleTarget(Name=coloredConsole)
+2025-12-14 01:07:36.9357 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.4.4534. Product version: 6.0.4+0f63723442db07c29eb838b0bce8b5633031a04e. GlobalAssemblyCache: False
+2025-12-14 01:07:36.9460 Info AutoReload Config File Monitor starting
+2025-12-14 01:07:36.9719 Warn Unused target detected. Add a rule for this target to the configuration. TargetName: console
+2025-12-14 01:07:36.9848 Info Configuration initialized.

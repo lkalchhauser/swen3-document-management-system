@@ -22,6 +22,7 @@ namespace DocumentManagementSystem.DAL.Repositories
 			var doc = await _context.Documents
 				.Include(d => d.Metadata)
 				.Include(d => d.Tags)
+				.Include(d => d.Notes)
 				.FirstOrDefaultAsync(d => d.Id == id, ct);
 
 			if (doc is null)

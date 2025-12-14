@@ -12,12 +12,16 @@ public class NoteService : INoteService
 {
 	private readonly DocumentManagementSystemContext _context;
 	private readonly IMapper _mapper;
+	private readonly ISearchService _searchService;
+	private readonly IDocumentService _documentService;
 	private readonly ILogger<NoteService> _logger;
 
-	public NoteService(DocumentManagementSystemContext context, IMapper mapper, ILogger<NoteService> logger)
+	public NoteService(DocumentManagementSystemContext context, IMapper mapper, ISearchService searchService, IDocumentService documentService, ILogger<NoteService> logger)
 	{
 		_context = context;
 		_mapper = mapper;
+		_searchService = searchService;
+		_documentService = documentService;
 		_logger = logger;
 	}
 
@@ -31,6 +35,21 @@ public class NoteService : INoteService
 
 		_context.Notes.Add(note);
 		await _context.SaveChangesAsync(ct);
+
+		try
+		{
+			var fullDoc = await _documentService.GetByIdAsync(documentId, ct);
+			if (fullDoc != null)
+			{
+				await _searchService.IndexDocumentAsync(fullDoc, ct);
+				_logger.LogInformation("Re-indexed document {DocumentId} to include new note", documentId);
+			}
+		}
+		catch (Exception ex)
+		{
+			// Don't fail the HTTP request if search indexing fails, just log it
+			_logger.LogError(ex, "Failed to re-index document {DocumentId} after adding note", documentId);
+		}
 
 		return _mapper.Map<NoteDTO>(note);
 	}

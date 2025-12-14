@@ -1,0 +1,10 @@
+2025-12-14 01:07:37.6918 Info Loading assembly name: NLog.Web.AspNetCore
+2025-12-14 01:07:37.7038 Info NLog.Web.AspNetCore, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.4.0.1202. Product version: 5.4.0+1a84e4cd5773967e452956643bd8d3fe4b688e55. GlobalAssemblyCache: False
+2025-12-14 01:07:37.7558 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2025-12-14 01:07:37.7558 Info Registered target NLog.Targets.FileTarget(Name=ownFile)
+2025-12-14 01:07:37.7558 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-12-14 01:07:37.7732 Info Registered target NLog.Targets.ColoredConsoleTarget(Name=coloredConsole)
+2025-12-14 01:07:37.7799 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.4.4534. Product version: 6.0.4+0f63723442db07c29eb838b0bce8b5633031a04e. GlobalAssemblyCache: False
+2025-12-14 01:07:37.7848 Info AutoReload Config File Monitor starting
+2025-12-14 01:07:37.8110 Warn Unused target detected. Add a rule for this target to the configuration. TargetName: console
+2025-12-14 01:07:37.8268 Info Configuration initialized.

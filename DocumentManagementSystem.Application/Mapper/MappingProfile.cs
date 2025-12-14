@@ -10,7 +10,8 @@ namespace DocumentManagementSystem.Application.Mapper
 		{
 			// ORM → DTO
 			CreateMap<Document, DocumentDTO>()
-				 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)));
+				 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)))
+				 .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes.Select(n => n.Text)));
 
 			CreateMap<DocumentMetadata, DocumentMetadataDTO>();
 			CreateMap<Tag, TagDTO>();

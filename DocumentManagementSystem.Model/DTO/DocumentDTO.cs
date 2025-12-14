@@ -9,6 +9,7 @@ namespace DocumentManagementSystem.Model.DTO
 		public DocumentMetadataDTO Metadata { get; set; } = null!;
 		// we don't need to type this since tags are only a string
 		public List<string> Tags { get; set; } = [];
-
+		// this is for elasticsearch
+		public List<string> Notes { get; set; } = [];
 	}
 }

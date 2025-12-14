@@ -1,4 +1,5 @@
 ﻿using DocumentManagementSystem.Application.Configuration;
+using DocumentManagementSystem.Application.Services.Enums;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Elastic.Clients.Elasticsearch;
@@ -43,7 +44,7 @@ public class ElasticSearchService : ISearchService
 		_logger.LogInformation("Document {DocumentId} successfully indexed", document.Id);
 	}
 
-	public async Task<IReadOnlyList<DocumentDTO>> SearchAsync(string searchTerm, CancellationToken ct = default)
+	public async Task<IReadOnlyList<DocumentDTO>> SearchAsync(string searchTerm, SearchMode mode, CancellationToken ct = default)
 	{
 		_logger.LogInformation("Searching documents with term: '{SearchTerm}'", searchTerm);
 
@@ -52,16 +53,27 @@ public class ElasticSearchService : ISearchService
 			return new List<DocumentDTO>();
 		}
 
+		_logger.LogInformation(mode.ToString());
+		var fields = mode switch
+		{
+			SearchMode.Notes => new[]
+			{
+				Infer.Field<DocumentDTO>(p => p.Notes)
+			},
+			_ => new[] // Content is the default search mode
+			{
+				Infer.Field<DocumentDTO>(p => p.FileName),
+				Infer.Field<DocumentDTO>(p => p.Tags),
+				Infer.Field<DocumentDTO>(p => p.Metadata.OcrText),
+				Infer.Field<DocumentDTO>(p => p.Metadata.Summary)
+			}
+		};
+
 		var response = await _client.SearchAsync<DocumentDTO>(s => s
 			.Indices(_indexName)
 			.Query(q => q
 				.MultiMatch(m => m
-					.Fields(new[] {
-						Infer.Field<DocumentDTO>(p => p.FileName),
-						Infer.Field<DocumentDTO>(p => p.Tags),
-						Infer.Field<DocumentDTO>(p => p.Metadata.OcrText),
-						Infer.Field<DocumentDTO>(p => p.Metadata.Summary)
-					})
+					.Fields(fields)
 					.Query(searchTerm)
 					.Fuzziness(new Fuzziness("AUTO"))
 				)

@@ -10,6 +10,7 @@ const DocumentDashboard: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchMode, setSearchMode] = useState<"content" | "notes">("content"); // New State
 
   useEffect(() => {
     loadDocuments();
@@ -22,7 +23,11 @@ const DocumentDashboard: React.FC = () => {
       if (!searchQuery.trim()) {
         await loadDocuments();
       } else {
-        const results = await documentApi.searchDocuments(searchQuery);
+        // Pass the selected search mode
+        const results = await documentApi.searchDocuments(
+          searchQuery,
+          searchMode
+        );
         setDocuments(results);
       }
     } catch (err) {
@@ -167,11 +172,34 @@ const DocumentDashboard: React.FC = () => {
 
       <div className="search-bar" style={{ marginBottom: "2rem" }}>
         <form onSubmit={handleSearch} style={{ display: "flex", gap: "1rem" }}>
+          {/* Search Mode Select */}
+          <select 
+            value={searchMode}
+            onChange={(e) => setSearchMode(e.target.value as 'content' | 'notes')}
+            style={{
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: '1px solid #e9ecef',
+              backgroundColor: 'white',
+              color: '#333', // Fixed text color
+              fontSize: '1rem',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="content">Search Content</option>
+            <option value="notes">Search Notes</option>
+          </select>
+
+          {/* Search Input */}
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search documents..."
+            placeholder={
+              searchMode === "notes"
+                ? "Search inside notes..."
+                : "Search filename, tags, content..."
+            }
             style={{
               flex: 1,
               padding: "0.75rem",

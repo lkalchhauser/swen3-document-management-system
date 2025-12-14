@@ -1,3 +1,4 @@
+using DocumentManagementSystem.Application.Services.Enums;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.AspNetCore.Mvc;
@@ -151,10 +152,11 @@ namespace DocumentManagementSystem.REST.Controllers
 		}
 
 		[HttpGet("search")]
-		public async Task<ActionResult<IReadOnlyList<DocumentDTO>>> Search([FromQuery] string query, CancellationToken ct)
+		public async Task<ActionResult<IReadOnlyList<DocumentDTO>>> Search([FromQuery] string query, string mode, CancellationToken ct)
 		{
 			_logger.LogInformation("Searching for documents with query: {Query}", query);
-			var results = await _searchService.SearchAsync(query, ct);
+			var searchMode = mode.ToLower() == "notes" ? SearchMode.Notes : SearchMode.Content;
+			var results = await _searchService.SearchAsync(query, searchMode, ct);
 			return Ok(results);
 		}
 	}
