@@ -1,4 +1,4 @@
-name: dms
+version: '3.4'
 
 services:
   rabbitmq:
@@ -6,13 +6,14 @@ services:
     container_name: dms_rabbitmq
     restart: unless-stopped
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"     # AMQP
-      - "${RABBITMQ_UI_PORT:-9093}:15672"   # Mgmt UI
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_UI_PORT:-9093}:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_running"]
       interval: 10s
       timeout: 5s
       retries: 5
+
   postgres:
     image: postgres:16-alpine
     container_name: dms_postgres
@@ -50,6 +51,24 @@ services:
     volumes:
       - minio_data:/data
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.2
+    container_name: dms_elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: .
@@ -60,25 +79,18 @@ services:
       - rabbitmq
       - postgres
       - minio
+      - elasticsearch
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
-
-      ConnectionStrings__Default: >
-        Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};
-        Username=${POSTGRES_USER:-dms};
-        Password=${POSTGRES_PASSWORD:-dms_pw};
-        Include Error Detail=true; Pooling=true
-
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};Username=${POSTGRES_USER:-dms};Password=${POSTGRES_PASSWORD:-dms_pw};Include Error Detail=true;Pooling=true"
       MinIO__Endpoint: minio:9000
       MinIO__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
       MinIO__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      MinIO__BucketName: documents
-      MinIO__UseSSL: false
-
+      ElasticSearch__Uri: http://elasticsearch:9200
     ports:
       - "${API_PORT:-8081}:8080"
-# TODO: use variables
+
   ocrworker:
     build:
       context: .
@@ -91,30 +103,20 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     environment:
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
       RabbitMq__Username: guest
       RabbitMq__Password: guest
       RabbitMq__QueueName: ocr_queue
-
-      ConnectionStrings__Default: >
-        Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};
-        Username=${POSTGRES_USER:-dms};
-        Password=${POSTGRES_PASSWORD:-dms_pw};
-        Include Error Detail=true; Pooling=true
-
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-dms};Username=${POSTGRES_USER:-dms};Password=${POSTGRES_PASSWORD:-dms_pw};Include Error Detail=true;Pooling=true"
       MinIO__Endpoint: minio:9000
       MinIO__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
       MinIO__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      MinIO__BucketName: documents
-      MinIO__UseSSL: false
-
+      ElasticSearch__Uri: http://elasticsearch:9200
       Gemini__ApiKey: ${GEMINI_API_KEY}
-      Gemini__Model: ${GEMINI_MODEL:-gemini-1.5-flash}
-      Gemini__MaxRetries: ${GEMINI_MAX_RETRIES:-3}
-      Gemini__TimeoutSeconds: ${GEMINI_TIMEOUT_SECONDS:-30}
-      Gemini__MaxPromptLength: ${GEMINI_MAX_PROMPT_LENGTH:-10000}
     restart: unless-stopped
 
   ui:
@@ -127,8 +129,6 @@ services:
       - api
     ports:
       - "${UI_PORT:-80}:80"
-    networks:
-      - default
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -147,4 +147,5 @@ services:
 volumes:
   pg_data:
   pgadmin_data:
-  minio_data: 
+  minio_data:
+  es_data:

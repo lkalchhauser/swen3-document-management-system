@@ -21,6 +21,9 @@ namespace DocumentManagementSystem.Application.Mapper
 
 			CreateMap<DocumentMetadataDTO, DocumentMetadata>();
 			CreateMap<TagDTO, Tag>();
+
+			CreateMap<Note, NoteDTO>();
+			CreateMap<CreateNoteDTO, Note>();
 		}
 	}
 }

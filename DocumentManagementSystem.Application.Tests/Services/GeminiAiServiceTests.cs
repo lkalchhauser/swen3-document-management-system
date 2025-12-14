@@ -26,7 +26,7 @@ public class GeminiAiServiceTests
 		_options = new GeminiOptions
 		{
 			ApiKey = "test-api-key",
-			Model = "gemini-1.5-flash",
+			Model = "gemini-2.5-flash",
 			MaxRetries = 3,
 			TimeoutSeconds = 30,
 			MaxPromptLength = 10000

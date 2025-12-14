@@ -10,6 +10,13 @@ const apiClient = axios.create({
   },
 });
 
+export interface NoteDto {
+  id: string;
+  text: string;
+  createdAt: string;
+  documentId: string;
+}
+
 export const documentApi = {
   // Get all documents
   getAllDocuments: async (): Promise<DocumentDto[]> => {
@@ -56,6 +63,23 @@ export const documentApi = {
   deleteDocument: async (id: string): Promise<void> => {
     await apiClient.delete(`/document/${id}`);
   },
+
+  searchDocuments: async (query: string): Promise<DocumentDto[]> => {
+    const response = await apiClient.get<DocumentDto[]>('/document/search', {
+      params: { query }
+    });
+    return response.data;
+  },
+
+  getNotes: async (documentId: string): Promise<NoteDto[]> => {
+    const response = await apiClient.get<NoteDto[]>(`/document/${documentId}/notes`);
+    return response.data;
+  },
+
+  addNote: async (documentId: string, text: string): Promise<NoteDto> => {
+    const response = await apiClient.post<NoteDto>(`/document/${documentId}/notes`, { text });
+    return response.data;
+  }
 };
 
 export default apiClient;

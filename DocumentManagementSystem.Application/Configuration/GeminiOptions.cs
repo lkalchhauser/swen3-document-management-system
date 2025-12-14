@@ -9,7 +9,7 @@ public class GeminiOptions
 	[Required(ErrorMessage = "Gemini API key is required")]
 	public string ApiKey { get; set; } = null!;
 
-	public string Model { get; set; } = "gemini-1.5-flash";
+	public string Model { get; set; } = "gemini-2.5-flash";
 
 	public string ApiEndpoint { get; set; } = "https://generativelanguage.googleapis.com/v1beta/models";
 

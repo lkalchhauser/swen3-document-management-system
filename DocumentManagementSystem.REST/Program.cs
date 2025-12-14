@@ -42,7 +42,10 @@ namespace DocumentManagementSystem.REST
 			builder.Services.AddOptions<MinioOptions>()
 				.Bind(builder.Configuration.GetSection(MinioOptions.SectionName));
 
-			builder.Services.AddSingleton<IMessagePublisherService>(sp =>
+			builder.Services.AddOptions<ElasticSearchOptions>()
+				.Bind(builder.Configuration.GetSection(ElasticSearchOptions.SectionName));
+
+				builder.Services.AddSingleton<IMessagePublisherService>(sp =>
 			{
 				var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>();
 				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
@@ -74,9 +77,11 @@ namespace DocumentManagementSystem.REST
 
 			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 			builder.Services.AddScoped<IDocumentService, DocumentService>();
+			builder.Services.AddScoped<ISearchService, ElasticSearchService>();
+			builder.Services.AddScoped<INoteService, NoteService>();
 
-			// Add services to the container.
-			builder.Services.AddAutoMapper(
+				// Add services to the container.
+				builder.Services.AddAutoMapper(
 				cfg =>
 				{
 
