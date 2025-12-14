@@ -1,4 +1,3 @@
-using System.Net;
 using AutoFixture;
 using DocumentManagementSystem.Application.Configuration;
 using DocumentManagementSystem.Application.Services;
@@ -10,7 +9,7 @@ using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.Response;
 using Moq;
-using Xunit;
+using System.Net;
 
 namespace DocumentManagementSystem.Application.Tests.Services;
 

@@ -30,7 +30,7 @@ public class DocumentUpdateService : IDocumentUpdateService
 		}
 
 		document.Metadata.OcrText = ocrText;
-		document.Metadata.Summary = aiSummary; 
+		document.Metadata.Summary = aiSummary;
 		document.Metadata.UpdatedAt = DateTimeOffset.UtcNow;
 
 		await _documentRepository.UpdateAsync(document, ct);

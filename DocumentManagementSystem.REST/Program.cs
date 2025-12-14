@@ -32,18 +32,18 @@ namespace DocumentManagementSystem.REST
 				builder.Logging.ClearProviders();
 				builder.Host.UseNLog();
 
-			var conn = builder.Configuration.GetConnectionString("Default");
+				var conn = builder.Configuration.GetConnectionString("Default");
 
-			builder.Services.AddOptions<RabbitMQOptions>()
-				.Bind(builder.Configuration.GetSection("RabbitMq"))
-				.ValidateDataAnnotations()
-				.Validate(o => !string.IsNullOrWhiteSpace(o.QueueName), "QueueName required");
+				builder.Services.AddOptions<RabbitMQOptions>()
+					.Bind(builder.Configuration.GetSection("RabbitMq"))
+					.ValidateDataAnnotations()
+					.Validate(o => !string.IsNullOrWhiteSpace(o.QueueName), "QueueName required");
 
-			builder.Services.AddOptions<MinioOptions>()
-				.Bind(builder.Configuration.GetSection(MinioOptions.SectionName));
+				builder.Services.AddOptions<MinioOptions>()
+					.Bind(builder.Configuration.GetSection(MinioOptions.SectionName));
 
-			builder.Services.AddOptions<ElasticSearchOptions>()
-				.Bind(builder.Configuration.GetSection(ElasticSearchOptions.SectionName));
+				builder.Services.AddOptions<ElasticSearchOptions>()
+					.Bind(builder.Configuration.GetSection(ElasticSearchOptions.SectionName));
 
 				builder.Services.AddSingleton<IMessagePublisherService>(sp =>
 			{
@@ -52,33 +52,33 @@ namespace DocumentManagementSystem.REST
 				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
 			});
 
-			builder.Services.AddSingleton<IMinioClient>(sp =>
-			{
-				var config = sp.GetRequiredService<IConfiguration>();
-				var endpoint = config["MinIO:Endpoint"] ?? "localhost:9000";
-				var accessKey = config["MinIO:AccessKey"] ?? "minioadmin";
-				var secretKey = config["MinIO:SecretKey"] ?? "minioadmin";
-				var useSSL = bool.Parse(config["MinIO:UseSSL"] ?? "false");
+				builder.Services.AddSingleton<IMinioClient>(sp =>
+				{
+					var config = sp.GetRequiredService<IConfiguration>();
+					var endpoint = config["MinIO:Endpoint"] ?? "localhost:9000";
+					var accessKey = config["MinIO:AccessKey"] ?? "minioadmin";
+					var secretKey = config["MinIO:SecretKey"] ?? "minioadmin";
+					var useSSL = bool.Parse(config["MinIO:UseSSL"] ?? "false");
 
-				return new MinioClient()
-					.WithEndpoint(endpoint)
-					.WithCredentials(accessKey, secretKey)
-					.WithSSL(useSSL)
-					.Build();
-			});
+					return new MinioClient()
+						.WithEndpoint(endpoint)
+						.WithCredentials(accessKey, secretKey)
+						.WithSSL(useSSL)
+						.Build();
+				});
 
-			builder.Services.AddScoped<IStorageService, MinioStorageService>();
+				builder.Services.AddScoped<IStorageService, MinioStorageService>();
 
-			// Only configure PostgreSQL if not in Testing environment
-			if (builder.Environment.EnvironmentName != "Testing")
-			{
-				builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
-			}
+				// Only configure PostgreSQL if not in Testing environment
+				if (builder.Environment.EnvironmentName != "Testing")
+				{
+					builder.Services.AddDbContext<DocumentManagementSystemContext>(opts => opts.UseNpgsql(conn));
+				}
 
-			builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
-			builder.Services.AddScoped<IDocumentService, DocumentService>();
-			builder.Services.AddScoped<ISearchService, ElasticSearchService>();
-			builder.Services.AddScoped<INoteService, NoteService>();
+				builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+				builder.Services.AddScoped<IDocumentService, DocumentService>();
+				builder.Services.AddScoped<ISearchService, ElasticSearchService>();
+				builder.Services.AddScoped<INoteService, NoteService>();
 
 				// Add services to the container.
 				builder.Services.AddAutoMapper(
@@ -88,34 +88,34 @@ namespace DocumentManagementSystem.REST
 				}, typeof(MappingProfile)
 			);
 
-			// Configure CORS for frontend communication
-			builder.Services.AddCors(options =>
-			{
-				options.AddPolicy("AllowUI", policy =>
+				// Configure CORS for frontend communication
+				builder.Services.AddCors(options =>
 				{
-					policy.WithOrigins("http://localhost", "http://localhost:80", "http://ui")
-						  .AllowAnyMethod()
-						  .AllowAnyHeader()
-						  .AllowCredentials();
+					options.AddPolicy("AllowUI", policy =>
+					{
+						policy.WithOrigins("http://localhost", "http://localhost:80", "http://ui")
+							  .AllowAnyMethod()
+							  .AllowAnyHeader()
+							  .AllowCredentials();
+					});
 				});
-			});
 
-			builder.Services.AddControllers();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+				builder.Services.AddControllers();
+				// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+				builder.Services.AddEndpointsApiExplorer();
+				builder.Services.AddSwaggerGen();
 
-			var app = builder.Build();
+				var app = builder.Build();
 
-			using (var scope = app.Services.CreateScope())
-			{
-				var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementSystemContext>();
-				var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-
-				// Only recreate database if not in Testing environment
-				if (RECREATE_DATABASE && env.EnvironmentName != "Testing")
+				using (var scope = app.Services.CreateScope())
 				{
-					dbContext.Database.ExecuteSqlRaw(@"
+					var dbContext = scope.ServiceProvider.GetRequiredService<DocumentManagementSystemContext>();
+					var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+
+					// Only recreate database if not in Testing environment
+					if (RECREATE_DATABASE && env.EnvironmentName != "Testing")
+					{
+						dbContext.Database.ExecuteSqlRaw(@"
             DO $$
             DECLARE
                 r RECORD;
@@ -125,25 +125,25 @@ namespace DocumentManagementSystem.REST
                 END LOOP;
             END $$;
         ");
-					dbContext.Database.EnsureCreated();
+						dbContext.Database.EnsureCreated();
+					}
 				}
-			}
 
-			// Configure the HTTP request pipeline.
-			if (app.Environment.IsDevelopment())
-			{
-				app.UseSwagger();
-				app.UseSwaggerUI();
-			}
+				// Configure the HTTP request pipeline.
+				if (app.Environment.IsDevelopment())
+				{
+					app.UseSwagger();
+					app.UseSwaggerUI();
+				}
 
-			app.UseCors("AllowUI");
-			app.UseAuthorization();
+				app.UseCors("AllowUI");
+				app.UseAuthorization();
 
 
-			app.MapControllers();
+				app.MapControllers();
 
-			logger.Info("Starting application");
-			app.Run();
+				logger.Info("Starting application");
+				app.Run();
 			}
 			catch (Exception ex)
 			{

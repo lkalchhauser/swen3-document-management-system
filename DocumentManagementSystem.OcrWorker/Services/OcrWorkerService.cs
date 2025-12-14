@@ -2,7 +2,6 @@ using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Messaging;
 using DocumentManagementSystem.Messaging.Model;
 using DocumentManagementSystem.Model.DTO;
-using DocumentManagementSystem.OcrWorker.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

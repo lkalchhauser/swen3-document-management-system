@@ -3,7 +3,6 @@ using DocumentManagementSystem.Application.Services.Enums;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Elastic.Clients.Elasticsearch;
-using Elastic.Clients.Elasticsearch.QueryDsl;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

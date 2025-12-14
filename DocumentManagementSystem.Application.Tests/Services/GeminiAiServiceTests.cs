@@ -1,5 +1,4 @@
 using DocumentManagementSystem.Application.Configuration;
-using DocumentManagementSystem.Application.Services;
 using DocumentManagementSystem.Application.Services.Gemini;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ using Moq.Protected;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Xunit;
 
 namespace DocumentManagementSystem.Application.Tests.Services;
 
@@ -146,7 +144,7 @@ public class GeminiAiServiceTests
 	public async Task GenerateSummaryAsync_WithLongText_ShouldTruncateToMaxPromptLength()
 	{
 		// Arrange
-		var longText = new string('A', 15000); 
+		var longText = new string('A', 15000);
 		var expectedSummary = "Summary of truncated text";
 
 		var responseJson = JsonSerializer.Serialize(new
@@ -172,7 +170,7 @@ public class GeminiAiServiceTests
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
 					req.Content != null &&
-					req.Content.ReadAsStringAsync().Result.Contains("AAAA") 
+					req.Content.ReadAsStringAsync().Result.Contains("AAAA")
 				),
 				ItExpr.IsAny<CancellationToken>())
 			.ReturnsAsync(() => new HttpResponseMessage
@@ -394,7 +392,7 @@ public class GeminiAiServiceTests
 
 		// Assert
 		Assert.Equal(expectedSummary, result);
-		Assert.Equal(2, attemptCount); 
+		Assert.Equal(2, attemptCount);
 	}
 
 	[Fact]
@@ -402,7 +400,7 @@ public class GeminiAiServiceTests
 	{
 		// Arrange
 		var cts = new CancellationTokenSource();
-		cts.Cancel(); 
+		cts.Cancel();
 
 		_mockHttpMessageHandler
 			.Protected()

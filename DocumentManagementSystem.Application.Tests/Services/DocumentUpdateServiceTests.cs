@@ -4,7 +4,6 @@ using DocumentManagementSystem.DAL.Repositories.Interfaces;
 using DocumentManagementSystem.Model.ORM;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace DocumentManagementSystem.Application.Tests.Services;
 
@@ -85,7 +84,7 @@ public class DocumentUpdateServiceTests
 		var document = new Document
 		{
 			Id = documentId,
-			Metadata = null 
+			Metadata = null
 		};
 
 		_mockRepository
