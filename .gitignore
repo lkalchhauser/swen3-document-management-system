@@ -43,4 +43,6 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
+logs
+
 .env
