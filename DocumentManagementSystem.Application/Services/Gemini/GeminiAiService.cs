@@ -163,7 +163,7 @@ public class GeminiAiService : IGenAiService
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Unexpected error calling Gemini API: {Message}", ex.Message);
-				throw; 
+				throw;
 			}
 		}
 

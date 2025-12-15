@@ -7,5 +7,7 @@ namespace DocumentManagementSystem.Model.ORM
 		public ICollection<Tag> Tags { get; set; } = [];
 
 		public DocumentMetadata? Metadata { get; set; }
+		// navigation property
+		public ICollection<Note> Notes { get; set; } = [];
 	}
 }

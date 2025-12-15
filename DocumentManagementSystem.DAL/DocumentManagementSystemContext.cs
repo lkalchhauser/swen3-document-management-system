@@ -8,5 +8,6 @@ namespace DocumentManagementSystem.DAL
 		public DbSet<Document> Documents => Set<Document>();
 		public DbSet<DocumentMetadata> Metadata => Set<DocumentMetadata>();
 		public DbSet<Tag> Tags => Set<Tag>();
+		public DbSet<Note> Notes => Set<Note>();
 	}
 }

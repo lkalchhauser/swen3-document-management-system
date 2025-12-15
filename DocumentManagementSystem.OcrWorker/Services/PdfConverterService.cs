@@ -8,7 +8,7 @@ namespace DocumentManagementSystem.OcrWorker.Services;
 public class PdfConverterService : IPdfConverterService
 {
 	private readonly ILogger<PdfConverterService> _logger;
-	private const int DefaultDpi = 300; 
+	private const int DefaultDpi = 300;
 
 	public PdfConverterService(ILogger<PdfConverterService> logger)
 	{

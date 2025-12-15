@@ -2,7 +2,6 @@ using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Messaging;
 using DocumentManagementSystem.Messaging.Model;
 using DocumentManagementSystem.Model.DTO;
-using DocumentManagementSystem.OcrWorker.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -43,6 +42,8 @@ public sealed class OcrWorkerService : MessageConsumerService<DocumentUploadMess
 		var ocrService = scope.ServiceProvider.GetRequiredService<IOcrService>();
 		var genAiService = scope.ServiceProvider.GetRequiredService<IGenAiService>();
 		var documentUpdateService = scope.ServiceProvider.GetRequiredService<IDocumentUpdateService>();
+		var searchService = scope.ServiceProvider.GetRequiredService<ISearchService>();
+		var documentService = scope.ServiceProvider.GetRequiredService<IDocumentService>();
 
 		try
 		{
@@ -80,6 +81,13 @@ public sealed class OcrWorkerService : MessageConsumerService<DocumentUploadMess
 			if (updateSuccess)
 			{
 				_logger.LogInformation("Document processing completed successfully for DocumentId={DocumentId} (OCR + AI Summary)", msg.DocumentId);
+
+				var fullDoc = await documentService.GetByIdAsync(msg.DocumentId, ct);
+				if (fullDoc != null)
+				{
+					await searchService.IndexDocumentAsync(fullDoc, ct);
+					_logger.LogInformation("Document {DocumentId} successfully indexed in Elasticsearch", msg.DocumentId);
+				}
 			}
 			else
 			{

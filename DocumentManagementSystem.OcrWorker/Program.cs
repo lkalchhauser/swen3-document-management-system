@@ -1,11 +1,13 @@
-﻿using DocumentManagementSystem.Messaging;
 ﻿using DocumentManagementSystem.Application.Configuration;
+using DocumentManagementSystem.Application.Mapper;
 using DocumentManagementSystem.Application.Services;
 using DocumentManagementSystem.Application.Services.Gemini;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
+using DocumentManagementSystem.Messaging;
+using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
 using DocumentManagementSystem.OcrWorker.Configuration;
 using DocumentManagementSystem.OcrWorker.Services;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Minio;
 using NLog;
 using NLog.Extensions.Hosting;
@@ -48,6 +51,9 @@ try
 						opts.Language = "eng";
 				});
 
+			services.AddOptions<ElasticSearchOptions>()
+				.Bind(ctx.Configuration.GetSection(ElasticSearchOptions.SectionName));
+
 			services.AddOptions<GeminiOptions>()
 				.Bind(ctx.Configuration.GetSection(GeminiOptions.SectionName))
 				.ValidateDataAnnotations()
@@ -58,6 +64,13 @@ try
 			var connectionString = ctx.Configuration.GetConnectionString("Default");
 			services.AddDbContext<DocumentManagementSystemContext>(opts =>
 				opts.UseNpgsql(connectionString));
+
+			services.AddSingleton<IMessagePublisherService>(sp =>
+			{
+				var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>();
+				var logger = sp.GetRequiredService<ILogger<MessagePublisherService>>();
+				return MessagePublisherService.CreateAsync(options, logger).GetAwaiter().GetResult();
+			});
 
 			services.AddSingleton<IMinioClient>(sp =>
 			{
@@ -80,6 +93,16 @@ try
 
 			services.AddScoped<IStorageService, MinioStorageService>();
 			services.AddScoped<IOcrService, TesseractOcrService>();
+			services.AddScoped<ISearchService, ElasticSearchService>();
+			services.AddScoped<INoteService, NoteService>();
+			services.AddScoped<IDocumentService, DocumentService>();
+
+			services.AddAutoMapper(
+				cfg =>
+				{
+
+				}, typeof(MappingProfile)
+			);
 
 			services.AddHostedService<OcrWorkerService>();
 		})

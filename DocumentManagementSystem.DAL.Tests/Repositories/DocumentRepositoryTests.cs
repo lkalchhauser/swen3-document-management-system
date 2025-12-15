@@ -25,11 +25,23 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 			return new DocumentManagementSystemContext(options);
 		}
 
+		// Helper to create a configured Fixture that handles circular references
+		private static IFixture CreateFixture()
+		{
+			var fixture = new Fixture();
+			// Remove the default throwing behavior
+			fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+				.ForEach(b => fixture.Behaviors.Remove(b));
+			// Add the omit behavior (returns null for the circular property instead of crashing)
+			fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+			return fixture;
+		}
+
 		[Fact]
 		public async Task AddAsync_AssignsId()
 		{
 			// Arrange
-			var fixture = new Fixture();
+			var fixture = CreateFixture(); // Use helper
 			await using var context = CreateInMemoryContext();
 			var repo = new DocumentRepository(context, _logger);
 
@@ -37,6 +49,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 				 .With(x => x.FileName, "test-add.pdf")
 				 .Without(x => x.Metadata)
 				 .Without(x => x.Tags)
+				 .Without(x => x.Notes) // Optional: explicitly exclude if not needed for this test
 				 .Create();
 
 			// Act
@@ -51,12 +64,13 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 		public async Task GetByIdAsync_ExistingDocument_ReturnsEntity()
 		{
 			// Arrange
-			var fixture = new Fixture();
+			var fixture = CreateFixture(); // Use helper
 			await using var context = CreateInMemoryContext();
 			var seeded = fixture.Build<Document>()
 				 .With(x => x.FileName, "test-get.pdf")
 				 .Without(x => x.Metadata)
 				 .Without(x => x.Tags)
+				 .Without(x => x.Notes)
 				 .Create();
 
 			await context.Documents.AddAsync(seeded);
@@ -90,7 +104,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 		public async Task UpdateAsync_ChangesArePersisted()
 		{
 			// Arrange
-			var fixture = new Fixture();
+			var fixture = CreateFixture(); // Use helper
 			await using var context = CreateInMemoryContext();
 			var repo = new DocumentRepository(context, _logger);
 
@@ -98,6 +112,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 				 .With(x => x.FileName, "original.pdf")
 				 .Without(x => x.Metadata)
 				 .Without(x => x.Tags)
+				 .Without(x => x.Notes)
 				 .Create();
 
 			await context.Documents.AddAsync(doc);
@@ -117,7 +132,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 		public async Task DeleteAsync_RemovesDocument()
 		{
 			// Arrange
-			var fixture = new Fixture();
+			var fixture = CreateFixture(); // Use helper
 			await using var context = CreateInMemoryContext();
 			var repo = new DocumentRepository(context, _logger);
 
@@ -125,6 +140,7 @@ namespace DocumentManagementSystem.DAL.Tests.Repositories
 				 .With(x => x.FileName, "delete-me.pdf")
 				 .Without(x => x.Metadata)
 				 .Without(x => x.Tags)
+				 .Without(x => x.Notes)
 				 .Create();
 
 			await context.Documents.AddAsync(doc);

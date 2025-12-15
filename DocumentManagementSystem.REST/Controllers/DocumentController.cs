@@ -1,3 +1,4 @@
+using DocumentManagementSystem.Application.Services.Enums;
 using DocumentManagementSystem.Application.Services.Interfaces;
 using DocumentManagementSystem.Model.DTO;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +11,15 @@ namespace DocumentManagementSystem.REST.Controllers
 	{
 		private readonly IDocumentService _service;
 		private readonly IStorageService _storageService;
+		private readonly ISearchService _searchService;
 		private readonly ILogger<DocumentController> _logger;
 
-		public DocumentController(IDocumentService service, IStorageService storageService, ILogger<DocumentController> logger)
+		public DocumentController(IDocumentService service, IStorageService storageService, ISearchService searchService,
+			ILogger<DocumentController> logger)
 		{
 			_service = service;
 			_storageService = storageService;
+			_searchService = searchService;
 			_logger = logger;
 		}
 
@@ -86,7 +90,8 @@ namespace DocumentManagementSystem.REST.Controllers
 
 		// POST api/document/upload
 		[HttpPost("upload")]
-		public async Task<ActionResult<DocumentDTO>> UploadFile(IFormFile file, [FromForm] string? tags, CancellationToken ct)
+		public async Task<ActionResult<DocumentDTO>> UploadFile(IFormFile file, [FromForm] string? tags,
+			CancellationToken ct)
 		{
 			if (file == null || file.Length == 0)
 			{
@@ -101,6 +106,7 @@ namespace DocumentManagementSystem.REST.Controllers
 			{
 				storagePath = await _storageService.UploadFileAsync(fileStream, file.FileName, file.ContentType, ct);
 			}
+
 			_logger.LogInformation("File saved to MinIO: {StoragePath}", storagePath);
 
 			// Parse tags if provided
@@ -143,6 +149,15 @@ namespace DocumentManagementSystem.REST.Controllers
 
 			_logger.LogInformation("Document {DocumentId} deleted successfully", id);
 			return NoContent();
+		}
+
+		[HttpGet("search")]
+		public async Task<ActionResult<IReadOnlyList<DocumentDTO>>> Search([FromQuery] string query, string mode, CancellationToken ct)
+		{
+			_logger.LogInformation("Searching for documents with query: {Query}", query);
+			var searchMode = mode.ToLower() == "notes" ? SearchMode.Notes : SearchMode.Content;
+			var results = await _searchService.SearchAsync(query, searchMode, ct);
+			return Ok(results);
 		}
 	}
 }

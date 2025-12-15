@@ -2,7 +2,6 @@ using Docnet.Core.Exceptions;
 using DocumentManagementSystem.OcrWorker.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace DocumentManagementSystem.Application.Tests.Services;
 
@@ -55,10 +54,10 @@ public class PdfConverterServiceTests
 	public async Task ConvertToImagesAsync_WithCancellationToken_ShouldRespectCancellation()
 	{
 		// Arrange
-		var invalidData = new byte[] { 0x25, 0x50, 0x44, 0x46 }; 
+		var invalidData = new byte[] { 0x25, 0x50, 0x44, 0x46 };
 		using var pdfStream = new MemoryStream(invalidData);
 		var cts = new CancellationTokenSource();
-		cts.Cancel(); 
+		cts.Cancel();
 
 		// Act & Assert
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>

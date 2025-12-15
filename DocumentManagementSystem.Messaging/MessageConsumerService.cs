@@ -1,3 +1,4 @@
+using DocumentManagementSystem.Messaging.Interfaces;
 using DocumentManagementSystem.Messaging.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using DocumentManagementSystem.Messaging.Interfaces;
 
 namespace DocumentManagementSystem.Messaging;
 

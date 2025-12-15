@@ -67,9 +67,9 @@ public sealed class MessagePublisherServiceTests
 
 		// Assert
 		_mockChannel.Verify(c => c.BasicPublishAsync(
-			"", 
-			_options.QueueName, 
-			false, 
+			"",
+			_options.QueueName,
+			false,
 			It.IsAny<BasicProperties>(),
 			It.IsAny<ReadOnlyMemory<byte>>(),
 			It.IsAny<CancellationToken>()
