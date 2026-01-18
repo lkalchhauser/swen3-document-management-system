@@ -73,6 +73,11 @@ export const DocumentInfo = ({ document }: DocumentInfoProps) => {
             </div>
           )}
 
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">Total Access Count</dt>
+            <dd className="mt-1 text-sm font-semibold text-blue-600">{document.accessCount || 0}</dd>
+          </div>
+
           {metadata.storagePath && (
             <div className="md:col-span-2">
               <dt className="text-sm font-medium text-muted-foreground">Storage Path</dt>

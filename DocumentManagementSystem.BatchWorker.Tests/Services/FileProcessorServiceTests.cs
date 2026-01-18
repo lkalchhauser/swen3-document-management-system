@@ -4,7 +4,6 @@ using DocumentManagementSystem.BatchWorker.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace DocumentManagementSystem.BatchWorker.Tests.Services
 {

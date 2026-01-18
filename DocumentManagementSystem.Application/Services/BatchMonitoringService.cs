@@ -78,6 +78,26 @@ namespace DocumentManagementSystem.Application.Services
 			}).ToList();
 		}
 
+		public async Task<List<BatchProcessingErrorDTO>> GetBatchErrorsAsync(CancellationToken cancellationToken = default)
+		{
+			var errors = await _context.BatchProcessingErrors
+				.OrderByDescending(e => e.CreatedAt)
+				.Take(50)
+				.Select(e => new BatchProcessingErrorDTO
+				{
+					Id = e.Id,
+					DocumentId = e.DocumentId,
+					BatchDate = e.BatchDate,
+					AccessCount = e.AccessCount,
+					ErrorMessage = e.ErrorMessage,
+					FileName = e.FileName,
+					CreatedAt = e.CreatedAt
+				})
+				.ToListAsync(cancellationToken);
+
+			return errors;
+		}
+
 		private List<BatchFileInfoDTO> GetFilesFromDirectory(string directoryPath, string status)
 		{
 			try

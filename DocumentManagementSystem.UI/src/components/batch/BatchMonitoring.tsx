@@ -36,21 +36,34 @@ interface DocumentAccessStatistics {
   dailyAccess: DailyAccess[];
 }
 
+interface BatchProcessingError {
+  id: string;
+  documentId: string;
+  batchDate: string;
+  accessCount: number;
+  errorMessage: string;
+  fileName: string | null;
+  createdAt: string;
+}
+
 export default function BatchMonitoring() {
   const [status, setStatus] = useState<BatchProcessingStatus | null>(null);
   const [statistics, setStatistics] = useState<DocumentAccessStatistics[]>([]);
+  const [errorRecords, setErrorRecords] = useState<BatchProcessingError[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
     try {
       setRefreshing(true);
-      const [statusResponse, statsResponse] = await Promise.all([
+      const [statusResponse, statsResponse, errorsResponse] = await Promise.all([
         api.get('/batchprocessing/status'),
-        api.get('/batchprocessing/statistics?top=10')
+        api.get('/batchprocessing/statistics?top=10'),
+        api.get('/batchprocessing/errors')
       ]);
       setStatus(statusResponse.data);
       setStatistics(statsResponse.data);
+      setErrorRecords(errorsResponse.data);
     } catch (error) {
       console.error('Error fetching batch monitoring data:', error);
     } finally {
@@ -216,7 +229,49 @@ export default function BatchMonitoring() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="errors">
+        <TabsContent value="errors" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Error Records</CardTitle>
+              <CardDescription>Invalid document IDs from batch processing</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {errorRecords.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No error records</p>
+              ) : (
+                <div className="space-y-3">
+                  {errorRecords.map((error) => (
+                    <div key={error.id} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="destructive">Error</Badge>
+                            {error.fileName && (
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {error.fileName}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm font-mono text-red-800 mb-1">
+                            Document ID: {error.documentId}
+                          </div>
+                          <div className="text-sm text-red-700">
+                            {error.errorMessage}
+                          </div>
+                        </div>
+                        <div className="text-right text-xs text-muted-foreground">
+                          <div>Batch Date: {new Date(error.batchDate).toLocaleDateString()}</div>
+                          <div>Access Count: {error.accessCount}</div>
+                          <div className="mt-1">{formatDate(error.createdAt)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Error Files</CardTitle>

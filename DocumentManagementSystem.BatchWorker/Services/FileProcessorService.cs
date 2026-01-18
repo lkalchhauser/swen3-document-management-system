@@ -61,10 +61,19 @@ namespace DocumentManagementSystem.BatchWorker.Services
 			try
 			{
 				var batch = await _xmlParser.ParseAsync(filePath, cancellationToken);
-				await _persistenceService.SaveAccessLogsAsync(batch, cancellationToken);
+				var result = await _persistenceService.SaveAccessLogsAsync(batch, fileName, cancellationToken);
 
-				MoveToArchive(filePath, fileName);
-				_logger.LogInformation("Successfully processed and archived file: {FileName}", fileName);
+				if (result.HasErrors)
+				{
+					MoveToError(filePath, fileName);
+					_logger.LogWarning("File contains {ErrorCount} invalid document IDs, moved to error folder: {FileName}",
+						result.ErrorCount, fileName);
+				}
+				else
+				{
+					MoveToArchive(filePath, fileName);
+					_logger.LogInformation("Successfully processed and archived file: {FileName}", fileName);
+				}
 			}
 			catch (Exception ex)
 			{

@@ -25,7 +25,7 @@ namespace DocumentManagementSystem.BatchWorker.Services
 			_context = context;
 		}
 
-		public async Task SaveAccessLogsAsync(AccessLogBatch batch, CancellationToken cancellationToken = default)
+		public async Task<AccessLogPersistenceResult> SaveAccessLogsAsync(AccessLogBatch batch, string? fileName = null, CancellationToken cancellationToken = default)
 		{
 			_logger.LogInformation("Saving {Count} access log entries for date {BatchDate}",
 				batch.Entries.Count, batch.BatchDate);
@@ -48,6 +48,7 @@ namespace DocumentManagementSystem.BatchWorker.Services
 						BatchDate = batch.BatchDate,
 						AccessCount = entry.AccessCount,
 						ErrorMessage = "Document ID does not exist in database",
+						FileName = fileName,
 						CreatedAt = DateTimeOffset.UtcNow
 					};
 
@@ -96,6 +97,12 @@ namespace DocumentManagementSystem.BatchWorker.Services
 
 			_logger.LogInformation("Processed {ProcessedCount} access logs, logged {ErrorCount} errors",
 				processedCount, errorCount);
+
+			return new AccessLogPersistenceResult
+			{
+				ProcessedCount = processedCount,
+				ErrorCount = errorCount
+			};
 		}
 	}
 }

@@ -2,6 +2,6 @@ namespace DocumentManagementSystem.BatchWorker.Services.Interfaces
 {
 	public interface IAccessLogPersistenceService
 	{
-		Task SaveAccessLogsAsync(AccessLogBatch batch, CancellationToken cancellationToken = default);
+		Task<AccessLogPersistenceResult> SaveAccessLogsAsync(AccessLogBatch batch, string? fileName = null, CancellationToken cancellationToken = default);
 	}
 }

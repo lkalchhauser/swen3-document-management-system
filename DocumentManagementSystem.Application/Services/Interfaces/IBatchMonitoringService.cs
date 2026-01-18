@@ -6,5 +6,6 @@ namespace DocumentManagementSystem.Application.Services.Interfaces
 	{
 		Task<BatchProcessingStatusDTO> GetBatchStatusAsync(CancellationToken cancellationToken = default);
 		Task<List<DocumentAccessStatisticsDTO>> GetAccessStatisticsAsync(int topN = 10, CancellationToken cancellationToken = default);
+		Task<List<BatchProcessingErrorDTO>> GetBatchErrorsAsync(CancellationToken cancellationToken = default);
 	}
 }

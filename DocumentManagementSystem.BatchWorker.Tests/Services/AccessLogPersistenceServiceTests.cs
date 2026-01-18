@@ -4,7 +4,6 @@ using DocumentManagementSystem.DAL.Repositories.Interfaces;
 using DocumentManagementSystem.Model.ORM;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace DocumentManagementSystem.BatchWorker.Tests.Services
 {

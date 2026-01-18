@@ -3,6 +3,7 @@ export interface DocumentDto {
   fileName: string;
   metadata: DocumentMetadataDto;
   tags: string[];
+  accessCount: number;
 }
 
 export interface DocumentMetadataDto {

@@ -47,5 +47,20 @@ namespace DocumentManagementSystem.REST.Controllers
 				return StatusCode(500, new { error = "Failed to retrieve access statistics" });
 			}
 		}
+
+		[HttpGet("errors")]
+		public async Task<IActionResult> GetBatchErrors(CancellationToken cancellationToken)
+		{
+			try
+			{
+				var errors = await _batchMonitoringService.GetBatchErrorsAsync(cancellationToken);
+				return Ok(errors);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error getting batch errors");
+				return StatusCode(500, new { error = "Failed to retrieve batch errors" });
+			}
+		}
 	}
 }
