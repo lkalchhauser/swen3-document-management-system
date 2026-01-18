@@ -83,5 +83,22 @@ namespace DocumentManagementSystem.DAL.Repositories
 			var changeCount = await _context.SaveChangesAsync(ct);
 			_logger.LogDebug("Saved {ChangeCount} changes to database", changeCount);
 		}
+
+		public async Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
+		{
+			_logger.LogDebug("Checking if document {DocumentId} exists", id);
+			return await _context.Documents.AnyAsync(d => d.Id == id, ct);
+		}
+
+		public async Task IncrementAccessCountAsync(Guid id, int count, CancellationToken ct = default)
+		{
+			_logger.LogDebug("Incrementing access count for document {DocumentId} by {Count}", id, count);
+			var document = await _context.Documents.FindAsync([id], ct);
+			if (document != null)
+			{
+				document.AccessCount += count;
+				_context.Documents.Update(document);
+			}
+		}
 	}
 }

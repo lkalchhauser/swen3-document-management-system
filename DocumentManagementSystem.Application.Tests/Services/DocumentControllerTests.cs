@@ -14,6 +14,7 @@ public sealed class DocumentControllerTests
 	private readonly Mock<IDocumentService> _mockService;
 	private readonly Mock<IStorageService> _mockStorageService;
 	private readonly Mock<ISearchService> _mockSearchService;
+	private readonly Mock<IAccessTrackingService> _mockAccessTrackingService;
 	private readonly Mock<ILogger<DocumentController>> _mockLogger;
 	private readonly DocumentController _controller;
 	private readonly Fixture _fixture;
@@ -23,8 +24,9 @@ public sealed class DocumentControllerTests
 		_mockService = new Mock<IDocumentService>();
 		_mockStorageService = new Mock<IStorageService>();
 		_mockSearchService = new Mock<ISearchService>();
+		_mockAccessTrackingService = new Mock<IAccessTrackingService>();
 		_mockLogger = new Mock<ILogger<DocumentController>>();
-		_controller = new DocumentController(_mockService.Object, _mockStorageService.Object, _mockSearchService.Object, _mockLogger.Object);
+		_controller = new DocumentController(_mockService.Object, _mockStorageService.Object, _mockSearchService.Object, _mockAccessTrackingService.Object, _mockLogger.Object);
 		_fixture = new Fixture();
 	}
 

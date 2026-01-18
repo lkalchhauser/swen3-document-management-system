@@ -11,5 +11,7 @@ namespace DocumentManagementSystem.DAL.Repositories.Interfaces
 		Task UpdateAsync(Document document, CancellationToken ct = default);
 		Task DeleteAsync(Document document, CancellationToken ct = default);
 		Task SaveChangesAsync(CancellationToken ct = default);
+		Task<bool> ExistsAsync(Guid id, CancellationToken ct = default);
+		Task IncrementAccessCountAsync(Guid id, int count, CancellationToken ct = default);
 	}
 }

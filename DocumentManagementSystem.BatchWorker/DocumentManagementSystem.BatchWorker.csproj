@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-DocumentManagementSystem.BatchWorker-3d9a1b2c-4e5f-6a7b-8c9d-0e1f2a3b4c5d</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Quartz" Version="3.13.1" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
+    <PackageReference Include="NLog" Version="6.0.4" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentManagementSystem.DAL\DocumentManagementSystem.DAL.csproj" />
+    <ProjectReference Include="..\DocumentManagementSystem.Model\DocumentManagementSystem.Model.csproj" />
+  </ItemGroup>
+
+</Project>

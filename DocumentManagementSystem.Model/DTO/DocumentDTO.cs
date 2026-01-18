@@ -11,5 +11,6 @@ namespace DocumentManagementSystem.Model.DTO
 		public List<string> Tags { get; set; } = [];
 		// this is for elasticsearch
 		public List<string> Notes { get; set; } = [];
+		public int AccessCount { get; set; }
 	}
 }
