@@ -60,12 +60,16 @@ namespace DocumentManagementSystem.BatchWorker.Tests.Services
 			await File.WriteAllTextAsync(testFile, "<test/>");
 
 			var batch = new AccessLogBatch(new DateOnly(2026, 1, 18), Array.Empty<AccessEntry>());
+			var result = new AccessLogPersistenceResult { ProcessedCount = 0, ErrorCount = 0 };
+
 			_xmlParserMock.Setup(x => x.ParseAsync(testFile, It.IsAny<CancellationToken>()))
 				.ReturnsAsync(batch);
+			_persistenceMock.Setup(p => p.SaveAccessLogsAsync(batch, "test.xml", It.IsAny<CancellationToken>()))
+				.ReturnsAsync(result);
 
 			await _service.ProcessFilesAsync();
 
-			_persistenceMock.Verify(p => p.SaveAccessLogsAsync(batch, It.IsAny<CancellationToken>()), Times.Once);
+			_persistenceMock.Verify(p => p.SaveAccessLogsAsync(batch, "test.xml", It.IsAny<CancellationToken>()), Times.Once);
 			Assert.False(File.Exists(testFile));
 			Assert.True(File.Exists(Path.Combine(_options.ArchiveFolder, "test.xml")));
 
@@ -73,7 +77,7 @@ namespace DocumentManagementSystem.BatchWorker.Tests.Services
 		}
 
 		[Fact]
-		public async Task ProcessFilesAsync_InvalidFile_MovesToError()
+		public async Task ProcessFilesAsync_InvalidXml_MovesToError()
 		{
 			Directory.CreateDirectory(_options.InputFolder);
 			var testFile = Path.Combine(_options.InputFolder, "invalid.xml");
@@ -84,9 +88,33 @@ namespace DocumentManagementSystem.BatchWorker.Tests.Services
 
 			await _service.ProcessFilesAsync();
 
-			_persistenceMock.Verify(p => p.SaveAccessLogsAsync(It.IsAny<AccessLogBatch>(), It.IsAny<CancellationToken>()), Times.Never);
+			_persistenceMock.Verify(p => p.SaveAccessLogsAsync(It.IsAny<AccessLogBatch>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 			Assert.False(File.Exists(testFile));
 			Assert.True(File.Exists(Path.Combine(_options.ErrorFolder, "invalid.xml")));
+
+			Directory.Delete(_tempDir, true);
+		}
+
+		[Fact]
+		public async Task ProcessFilesAsync_InvalidDocumentIds_MovesToError()
+		{
+			Directory.CreateDirectory(_options.InputFolder);
+			var testFile = Path.Combine(_options.InputFolder, "errors.xml");
+			await File.WriteAllTextAsync(testFile, "<test/>");
+
+			var batch = new AccessLogBatch(new DateOnly(2026, 1, 18), Array.Empty<AccessEntry>());
+			var result = new AccessLogPersistenceResult { ProcessedCount = 0, ErrorCount = 2 };
+
+			_xmlParserMock.Setup(x => x.ParseAsync(testFile, It.IsAny<CancellationToken>()))
+				.ReturnsAsync(batch);
+			_persistenceMock.Setup(p => p.SaveAccessLogsAsync(batch, "errors.xml", It.IsAny<CancellationToken>()))
+				.ReturnsAsync(result);
+
+			await _service.ProcessFilesAsync();
+
+			_persistenceMock.Verify(p => p.SaveAccessLogsAsync(batch, "errors.xml", It.IsAny<CancellationToken>()), Times.Once);
+			Assert.False(File.Exists(testFile));
+			Assert.True(File.Exists(Path.Combine(_options.ErrorFolder, "errors.xml")));
 
 			Directory.Delete(_tempDir, true);
 		}
