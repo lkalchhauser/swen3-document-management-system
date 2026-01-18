@@ -101,6 +101,41 @@ export const documentApi = {
     );
     return response.data;
   },
+
+  /**
+   * Get the preview URL for a document.
+   * Returns a URL that can be used directly in <img> or <iframe> elements.
+   * Follows Single Responsibility Principle - generates URL only.
+   * @param id - Document unique identifier
+   * @returns Full URL to preview endpoint
+   */
+  getDocumentPreviewUrl: (id: string): string => {
+    return `${API_BASE_URL}/document/${id}/preview`;
+  },
+
+  /**
+   * Get the download URL for a document.
+   * Returns a URL that triggers browser download with proper filename.
+   * @param id - Document unique identifier
+   * @returns Full URL to download endpoint
+   */
+  getDocumentDownloadUrl: (id: string): string => {
+    return `${API_BASE_URL}/document/${id}/download`;
+  },
+
+  /**
+   * Download document file as a blob.
+   * Useful for programmatic downloads or processing file content.
+   * Follows Open/Closed Principle - can be extended without modification.
+   * @param id - Document unique identifier
+   * @returns Promise resolving to file blob
+   */
+  downloadDocument: async (id: string): Promise<Blob> => {
+    const response = await apiClient.get(`/document/${id}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
 };
 
 export default apiClient;

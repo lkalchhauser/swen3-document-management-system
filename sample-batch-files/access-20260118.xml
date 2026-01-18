@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessLogBatch batchDate="2026-01-18">
+  <entry documentId="a1b2c3d4-e5f6-7890-abcd-ef1234567890" accessCount="15" />
+  <entry documentId="b2c3d4e5-f6a7-8901-bcde-f12345678901" accessCount="8" />
+  <entry documentId="c3d4e5f6-a7b8-9012-cdef-123456789012" accessCount="23" />
+  <entry documentId="d4e5f6a7-b8c9-0123-def1-234567890123" accessCount="5" />
+</accessLogBatch>

@@ -76,9 +76,12 @@ namespace DocumentManagementSystem.REST
 				}
 
 				builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+				builder.Services.AddScoped<IDocumentAccessLogRepository, DocumentAccessLogRepository>();
 				builder.Services.AddScoped<IDocumentService, DocumentService>();
 				builder.Services.AddScoped<ISearchService, ElasticSearchService>();
 				builder.Services.AddScoped<INoteService, NoteService>();
+				builder.Services.AddScoped<IBatchMonitoringService, BatchMonitoringService>();
+				builder.Services.AddScoped<IAccessTrackingService, AccessTrackingService>();
 
 				// Add services to the container.
 				builder.Services.AddAutoMapper(

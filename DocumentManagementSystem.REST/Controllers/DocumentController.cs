@@ -12,14 +12,16 @@ namespace DocumentManagementSystem.REST.Controllers
 		private readonly IDocumentService _service;
 		private readonly IStorageService _storageService;
 		private readonly ISearchService _searchService;
+		private readonly IAccessTrackingService _accessTrackingService;
 		private readonly ILogger<DocumentController> _logger;
 
 		public DocumentController(IDocumentService service, IStorageService storageService, ISearchService searchService,
-			ILogger<DocumentController> logger)
+			IAccessTrackingService accessTrackingService, ILogger<DocumentController> logger)
 		{
 			_service = service;
 			_storageService = storageService;
 			_searchService = searchService;
+			_accessTrackingService = accessTrackingService;
 			_logger = logger;
 		}
 
@@ -44,6 +46,8 @@ namespace DocumentManagementSystem.REST.Controllers
 				_logger.LogWarning("Document {DocumentId} not found", id);
 				return NotFound();
 			}
+
+		await _accessTrackingService.TrackAccessAsync(id, ct);
 
 			_logger.LogInformation("Retrieved document {DocumentId}", id);
 			return Ok(doc);
@@ -158,6 +162,99 @@ namespace DocumentManagementSystem.REST.Controllers
 			var searchMode = mode.ToLower() == "notes" ? SearchMode.Notes : SearchMode.Content;
 			var results = await _searchService.SearchAsync(query, searchMode, ct);
 			return Ok(results);
+		}
+
+		// GET api/document/{id}/preview
+		/// <summary>
+		/// Stream document file for preview purposes with range request support.
+		/// Following Single Responsibility Principle - handles HTTP concerns only.
+		/// </summary>
+		/// <param name="id">Document unique identifier</param>
+		/// <param name="ct">Cancellation token</param>
+		/// <returns>File stream with appropriate content type for inline display</returns>
+		[HttpGet("{id:guid}/preview")]
+		public async Task<IActionResult> PreviewFile(Guid id, CancellationToken ct)
+		{
+			_logger.LogDebug("Preview request for document: {DocumentId}", id);
+
+			// Retrieve document metadata (Dependency Inversion: depend on IDocumentService abstraction)
+			var document = await _service.GetByIdAsync(id, ct);
+			if (document is null)
+			{
+				_logger.LogWarning("Document {DocumentId} not found for preview", id);
+				return NotFound(new { message = "Document not found" });
+			}
+
+			// Validate storage path exists (defensive programming)
+			if (string.IsNullOrWhiteSpace(document.Metadata.StoragePath))
+			{
+				_logger.LogError("Document {DocumentId} has no storage path", id);
+				return NotFound(new { message = "Document file not found in storage" });
+			}
+
+			try
+			{
+				// Download file from storage (Dependency Inversion: depend on IStorageService abstraction)
+				var fileStream = await _storageService.DownloadFileAsync(document.Metadata.StoragePath, ct);
+
+				_logger.LogInformation("Streaming preview for document {DocumentId}, Type: {ContentType}",
+					id, document.Metadata.ContentType);
+
+				// Return file stream with proper content type for inline display
+				// enableRangeProcessing allows browser to seek through PDFs and videos
+				return File(fileStream, document.Metadata.ContentType, enableRangeProcessing: true);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error streaming preview for document {DocumentId}", id);
+				return StatusCode(500, new { message = "Error retrieving document file" });
+			}
+		}
+
+		// GET api/document/{id}/download
+		/// <summary>
+		/// Download document file with proper attachment headers.
+		/// Following Open/Closed Principle - extensible through configuration, closed for modification.
+		/// </summary>
+		/// <param name="id">Document unique identifier</param>
+		/// <param name="ct">Cancellation token</param>
+		/// <returns>File stream as downloadable attachment</returns>
+		[HttpGet("{id:guid}/download")]
+		public async Task<IActionResult> DownloadFile(Guid id, CancellationToken ct)
+		{
+			_logger.LogDebug("Download request for document: {DocumentId}", id);
+
+			// Retrieve document metadata
+			var document = await _service.GetByIdAsync(id, ct);
+			if (document is null)
+			{
+				_logger.LogWarning("Document {DocumentId} not found for download", id);
+				return NotFound(new { message = "Document not found" });
+			}
+
+			// Validate storage path exists
+			if (string.IsNullOrWhiteSpace(document.Metadata.StoragePath))
+			{
+				_logger.LogError("Document {DocumentId} has no storage path", id);
+				return NotFound(new { message = "Document file not found in storage" });
+			}
+
+			try
+			{
+				// Download file from storage
+				var fileStream = await _storageService.DownloadFileAsync(document.Metadata.StoragePath, ct);
+
+				_logger.LogInformation("Downloading document {DocumentId}, FileName: {FileName}",
+					id, document.FileName);
+
+				// Return file as downloadable attachment with original filename
+				return File(fileStream, document.Metadata.ContentType, document.FileName);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error downloading document {DocumentId}", id);
+				return StatusCode(500, new { message = "Error retrieving document file" });
+			}
 		}
 	}
 }

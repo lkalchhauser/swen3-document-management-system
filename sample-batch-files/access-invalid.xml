@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessLogBatch batchDate="INVALID-DATE">
+  <entry documentId="NOT-A-GUID" accessCount="abc" />
+  <entry documentId="12345678-1234-1234-1234-123456789012" accessCount="-5" />
+</accessLogBatch>
