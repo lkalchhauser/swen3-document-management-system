@@ -9,5 +9,7 @@ namespace DocumentManagementSystem.Model.ORM
 		public DocumentMetadata? Metadata { get; set; }
 		// navigation property
 		public ICollection<Note> Notes { get; set; } = [];
+
+		public int AccessCount { get; set; } = 0;
 	}
 }

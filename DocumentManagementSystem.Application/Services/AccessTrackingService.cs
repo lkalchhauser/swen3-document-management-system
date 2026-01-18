@@ -9,13 +9,16 @@ namespace DocumentManagementSystem.Application.Services
 	{
 		private readonly ILogger<AccessTrackingService> _logger;
 		private readonly IDocumentAccessLogRepository _repository;
+		private readonly IDocumentRepository _documentRepository;
 
 		public AccessTrackingService(
 			ILogger<AccessTrackingService> logger,
-			IDocumentAccessLogRepository repository)
+			IDocumentAccessLogRepository repository,
+			IDocumentRepository documentRepository)
 		{
 			_logger = logger;
 			_repository = repository;
+			_documentRepository = documentRepository;
 		}
 
 		public async Task TrackAccessAsync(Guid documentId, CancellationToken cancellationToken = default)
@@ -24,6 +27,7 @@ namespace DocumentManagementSystem.Application.Services
 			{
 				var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
+				// Update DocumentAccessLog (daily tracking)
 				var existingLog = await _repository.GetByDocumentAndDateAsync(documentId, today, cancellationToken);
 
 				if (existingLog != null)
@@ -43,6 +47,9 @@ namespace DocumentManagementSystem.Application.Services
 					};
 					await _repository.AddAsync(newLog, cancellationToken);
 				}
+
+				// Update Documents.AccessCount (total count)
+				await _documentRepository.IncrementAccessCountAsync(documentId, 1, cancellationToken);
 
 				await _repository.SaveChangesAsync(cancellationToken);
 				_logger.LogDebug("Tracked access for document {DocumentId}", documentId);

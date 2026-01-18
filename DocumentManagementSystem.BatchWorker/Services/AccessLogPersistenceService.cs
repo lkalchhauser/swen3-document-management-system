@@ -1,4 +1,5 @@
 using DocumentManagementSystem.BatchWorker.Services.Interfaces;
+using DocumentManagementSystem.DAL;
 using DocumentManagementSystem.DAL.Repositories.Interfaces;
 using DocumentManagementSystem.Model.ORM;
 using Microsoft.Extensions.Logging;
@@ -9,13 +10,19 @@ namespace DocumentManagementSystem.BatchWorker.Services
 	{
 		private readonly ILogger<AccessLogPersistenceService> _logger;
 		private readonly IDocumentAccessLogRepository _repository;
+		private readonly IDocumentRepository _documentRepository;
+		private readonly DocumentManagementSystemContext _context;
 
 		public AccessLogPersistenceService(
 			ILogger<AccessLogPersistenceService> logger,
-			IDocumentAccessLogRepository repository)
+			IDocumentAccessLogRepository repository,
+			IDocumentRepository documentRepository,
+			DocumentManagementSystemContext context)
 		{
 			_logger = logger;
 			_repository = repository;
+			_documentRepository = documentRepository;
+			_context = context;
 		}
 
 		public async Task SaveAccessLogsAsync(AccessLogBatch batch, CancellationToken cancellationToken = default)
@@ -24,17 +31,32 @@ namespace DocumentManagementSystem.BatchWorker.Services
 				batch.Entries.Count, batch.BatchDate);
 
 			var processedCount = 0;
-			var skippedCount = 0;
+			var errorCount = 0;
 
 			foreach (var entry in batch.Entries)
 			{
-				if (!await _repository.DocumentExistsAsync(entry.DocumentId, cancellationToken))
+				// Check if document exists
+				if (!await _documentRepository.ExistsAsync(entry.DocumentId, cancellationToken))
 				{
-					_logger.LogWarning("Document {DocumentId} not found, skipping entry", entry.DocumentId);
-					skippedCount++;
+					// Document doesn't exist - log as error in BatchProcessingErrors table
+					_logger.LogWarning("Document {DocumentId} not found, logging error", entry.DocumentId);
+
+					var error = new BatchProcessingError
+					{
+						Id = Guid.NewGuid(),
+						DocumentId = entry.DocumentId,
+						BatchDate = batch.BatchDate,
+						AccessCount = entry.AccessCount,
+						ErrorMessage = "Document ID does not exist in database",
+						CreatedAt = DateTimeOffset.UtcNow
+					};
+
+					await _context.BatchProcessingErrors.AddAsync(error, cancellationToken);
+					errorCount++;
 					continue;
 				}
 
+				// Update DocumentAccessLog (for historical tracking per date)
 				var existingLog = await _repository.GetByDocumentAndDateAsync(
 					entry.DocumentId, batch.BatchDate, cancellationToken);
 
@@ -61,13 +83,19 @@ namespace DocumentManagementSystem.BatchWorker.Services
 						entry.DocumentId, newLog.AccessCount);
 				}
 
+				// Update Documents.AccessCount (total access count in Documents table)
+				await _documentRepository.IncrementAccessCountAsync(entry.DocumentId, entry.AccessCount, cancellationToken);
+				_logger.LogDebug("Incremented access count for document {DocumentId} by {Count}",
+					entry.DocumentId, entry.AccessCount);
+
 				processedCount++;
 			}
 
-			await _repository.SaveChangesAsync(cancellationToken);
+			// Save all changes
+			await _context.SaveChangesAsync(cancellationToken);
 
-			_logger.LogInformation("Saved {ProcessedCount} access logs, skipped {SkippedCount}",
-				processedCount, skippedCount);
+			_logger.LogInformation("Processed {ProcessedCount} access logs, logged {ErrorCount} errors",
+				processedCount, errorCount);
 		}
 	}
 }

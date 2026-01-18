@@ -31,6 +31,7 @@ try
 		opts.UseNpgsql(connectionString));
 
 	builder.Services.AddScoped<IDocumentAccessLogRepository, DocumentAccessLogRepository>();
+	builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 	builder.Services.AddScoped<IXmlParserService, XmlParserService>();
 	builder.Services.AddScoped<IAccessLogPersistenceService, AccessLogPersistenceService>();
 	builder.Services.AddScoped<IFileProcessorService, FileProcessorService>();

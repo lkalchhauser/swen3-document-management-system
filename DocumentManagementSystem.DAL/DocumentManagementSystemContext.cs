@@ -10,6 +10,7 @@ namespace DocumentManagementSystem.DAL
 		public DbSet<Tag> Tags => Set<Tag>();
 		public DbSet<Note> Notes => Set<Note>();
 		public DbSet<DocumentAccessLog> DocumentAccessLogs => Set<DocumentAccessLog>();
+		public DbSet<BatchProcessingError> BatchProcessingErrors => Set<BatchProcessingError>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
